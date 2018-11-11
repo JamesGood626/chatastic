@@ -7,8 +7,7 @@ const { gql } = require("apollo-server-express");
 // 2. Utilize an email service to facilitate invitation via email
 const UserTypeDef = gql`
   type User {
-    id: Int!
-    channelId: Int!
+    uuid: Int!
     firstname: String!
     lastname: String!
     username: String!
@@ -18,8 +17,6 @@ const UserTypeDef = gql`
   }
 
   input CreateUserInput {
-    id: Int!
-    channelId: Int!
     firstname: String!
     lastname: String!
     username: String!

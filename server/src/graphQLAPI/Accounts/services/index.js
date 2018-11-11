@@ -1,4 +1,4 @@
-const users = [];
+let users = [];
 
 const allUsers = () => {
   return Promise.resolve(users);
@@ -17,7 +17,12 @@ const loginUser = args => {
   return Promise.resolve(user);
 };
 
+const resetUsers = () => {
+  users = [];
+};
+
 module.exports = {
   allUsers: allUsers,
-  createUser: createUser
+  createUser: createUser,
+  resetUsers: resetUsers
 };

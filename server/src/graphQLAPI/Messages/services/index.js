@@ -1,4 +1,4 @@
-const messages = [];
+let messages = [];
 
 const createMessage = args => {
   const message = args.input;
@@ -6,6 +6,11 @@ const createMessage = args => {
   return Promise.resolve(message);
 };
 
+const resetMessages = () => {
+  messages = [];
+};
+
 module.exports = {
-  createMessage: createMessage
+  createMessage: createMessage,
+  resetMessages: resetMessages
 };

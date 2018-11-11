@@ -2,21 +2,19 @@ const { gql } = require("apollo-server-express");
 
 const ChatTypeDef = gql`
   type Chat {
-    id: Int!
-    channelId: Int!
+    uuid: Int!
+    channelId: String!
     title: String
     messages: [Message]
   }
 
   input CreateDirectChatInput {
-    id: Int!
-    channelId: Int!
+    channelId: String!
     message: String!
   }
 
   input CreateGroupChatInput {
-    id: Int!
-    channelId: Int!
+    channelId: String!
     title: String!
   }
 `;

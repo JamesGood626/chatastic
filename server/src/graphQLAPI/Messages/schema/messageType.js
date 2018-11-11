@@ -4,14 +4,12 @@ const { gql } = require("apollo-server-express");
 // Read that new graphql book you got.
 const MessageTypeDef = gql`
   type Message {
-    id: Int!
-    channelId: Int!
+    channelId: String!
     text: String!
   }
 
   input MessageInput {
-    id: Int!
-    channelId: Int!
+    channelId: String!
     text: String!
   }
 `;
