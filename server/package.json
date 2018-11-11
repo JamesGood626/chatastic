@@ -1,0 +1,36 @@
+{
+  "name": "chatastic-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "server": "./node_modules/nodemon/bin/nodemon.js",
+    "client": "npm run start --prefix ../client",
+    "dev": "NODE_ENV=dev concurrently \"npm run server\" \"npm run client\"",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^2.2.0",
+    "apollo-server-express": "^2.2.0",
+    "bcrypt": "^3.0.2",
+    "body-parser": "^1.18.3",
+    "concurrently": "^4.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "graphql": "^14.0.2",
+    "graphql-tools": "^4.0.3",
+    "helmet": "^3.15.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "subscriptions-transport-ws": "^0.9.15",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.6",
+    "supertest": "^3.3.0"
+  }
+}

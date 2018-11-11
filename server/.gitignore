@@ -1,0 +1,6 @@
+.DS_Store
+*.DS_Store
+/src/Config
+/node_modules
+/src/coverage.data
+/src/coverage/*.DS_Store
