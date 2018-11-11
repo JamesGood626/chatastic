@@ -10,6 +10,13 @@ const createUser = args => {
   return Promise.resolve(user);
 };
 
+const loginUser = args => {
+  const username = args.input.username;
+  // users.push(user);
+  const user = users[0];
+  return Promise.resolve(user);
+};
+
 module.exports = {
   allUsers: allUsers,
   createUser: createUser
