@@ -37,12 +37,16 @@ const dropUserCollection = async () => {
 
 const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
                               createUser(input: $input) {
+                                firstname
+                                lastname
                                 token
                               }
                             }`;
 
 const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
                             loginUser(input: $input) {
+                              firstname
+                              lastname
                               token
                             }
                           }`;

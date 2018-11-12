@@ -5,6 +5,7 @@ const { gql } = require("apollo-server-express");
 // 1. List all users that have been created/implement user search feature
 //    so that whoever logs in can invite any of them into a group
 // 2. Utilize an email service to facilitate invitation via email
+
 const UserTypeDef = gql`
   type User {
     id: String!
@@ -17,7 +18,9 @@ const UserTypeDef = gql`
     chats: [Chat]
   }
 
-  type Token {
+  type Authorization {
+    firstname: String!
+    lastname: String!
     token: String!
   }
 

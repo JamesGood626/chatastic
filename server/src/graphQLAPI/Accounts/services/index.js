@@ -14,7 +14,7 @@ const createJWToken = userCredentials => {
   const token = jwt.sign(userCredentials, JWT_SECRET, {
     expiresIn: 60 * 10080
   });
-  return { token };
+  return token;
 };
 
 const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
@@ -24,8 +24,13 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
   if (!user) {
     reject("Username or password is incorrect.");
   } else {
-    const { username, password } = user;
-    resolve(createJWToken({ username, password }));
+    const { firstname, lastname, username, password } = user;
+    const authorization = {
+      firstname,
+      lastname,
+      token: createJWToken({ username, password })
+    };
+    resolve(authorization);
   }
 };
 
@@ -42,7 +47,12 @@ const createUser = input => {
         const newUser = new User({ firstname, lastname, username });
         // Add in if else to lower saltRounds during testing
         await hashPasswordAndSaveUser(newUser, password);
-        resolve(createJWToken({ username, password }));
+        const authorization = {
+          firstname,
+          lastname,
+          token: createJWToken({ username, password })
+        };
+        resolve(authorization);
       }
     } catch (e) {
       reject("Something went wrong while creating user.");

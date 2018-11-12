@@ -7,8 +7,8 @@ const queryTypeDef = gql`
   }
 
   type Mutation {
-    createUser(input: CreateUserInput!): Token
-    loginUser(input: LoginUserInput!): Token
+    createUser(input: CreateUserInput!): Authorization
+    loginUser(input: LoginUserInput!): Authorization
     createGroup(input: CreateGroupInput!): Group
     createDirectChat(input: CreateDirectChatInput!): Chat
     createGroupChat(input: CreateGroupChatInput!): Chat
@@ -21,13 +21,3 @@ const queryTypeDef = gql`
 `;
 
 module.exports = queryTypeDef;
-
-// Don't know why I had this in here.
-// input SearchRestaurantInput {
-//   latitude: Float!
-//   longitude: Float!
-//   categories: [String]
-//   cuisines: [String]
-//   establishment: String
-//   radius: String
-// }

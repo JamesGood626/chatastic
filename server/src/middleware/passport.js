@@ -19,7 +19,6 @@ const localLogin = new LocalStrategy(
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return done(null, false, { message: "Incorrect username or password." });
     }
-    console.log("Make it to last compare: ", user);
     return done(null, user);
   }
 );
