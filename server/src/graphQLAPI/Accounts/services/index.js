@@ -42,6 +42,7 @@ const getUserByUsername = async username => {
 };
 
 const getUserById = async id => {
+  console.log("ATTEMPTING TO FIND BY ID");
   const user = await User.findById(id);
   console.log("FOUND USER BY ID: ", user);
   return user;

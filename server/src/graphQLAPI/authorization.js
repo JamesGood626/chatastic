@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const { getUserByUsername } = require("./Accounts/services");
+const {
+  TOKEN_EXPIRED_MESSAGE,
+  TOKEN_DECODING_MESSAGE
+} = require("./errorMessages");
 
 const decodeToken = token => {
   const splitToken = token.split(" ")[1];
@@ -8,7 +12,7 @@ const decodeToken = token => {
     const decoded = jwt.verify(splitToken, JWT_SECRET);
     return decoded;
   } catch (err) {
-    throw new Error("An error occured while decoding token.");
+    throw new Error(TOKEN_DECODING_MESSAGE);
   }
 };
 
@@ -23,19 +27,22 @@ const verifyAuthorization = async authorization => {
       console.log("Error retrieving user by username: ", username);
     }
   } else {
-    throw new Error("Token is expired.");
+    throw new Error(TOKEN_EXPIRED_MESSAGE);
   }
 };
 
 const authorizeRequest = async authorization => {
   let user;
-  let expired;
+  let errors = {};
   try {
     user = await verifyAuthorization(authorization);
   } catch (e) {
-    expired = e.message;
+    errors.decodeTokenError =
+      e.message === TOKEN_DECODING_MESSAGE ? TOKEN_DECODING_MESSAGE : null;
+    errors.expiredTokenError =
+      e.message === TOKEN_EXPIRED_MESSAGE ? TOKEN_EXPIRED_MESSAGE : null;
   }
-  return { user, expired };
+  return { user, errors };
 };
 
 module.exports = authorizeRequest;

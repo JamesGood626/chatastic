@@ -1,16 +1,10 @@
+const { ForbiddenError } = require("apollo-server");
 const Group = require("../model/group");
-
-let groups = [];
-
-const allGroups = () => {
-  return Promise.resolve(groups);
-};
-
-// const createGroup = args => {
-//   const group = args.input;
-//   groups.push(group);
-//   return Promise.resolve(group);
-// };
+const authorizeRequest = require("../../authorization");
+const {
+  TOKEN_EXPIRED_MESSAGE,
+  TOKEN_DECODING_MESSAGE
+} = require("../../errorMessages");
 
 const createGroup = input => {
   return new Promise(async (resolve, reject) => {
@@ -25,7 +19,7 @@ const createGroup = input => {
   });
 };
 
-const createGroupWithAssignedCreator = async (user, input) => {
+const assignCreatorAndCreateGroup = async (user, input) => {
   let createdGroup;
   if ((user, input)) {
     input.creator = user._id;
@@ -38,12 +32,21 @@ const createGroupWithAssignedCreator = async (user, input) => {
   }
 };
 
-const resetGroups = () => {
-  groups = [];
+const createGroupIfUserAuthorizationSuccess = async (input, authorization) => {
+  let createdGroup;
+  const { user, errors } = await authorizeRequest(authorization);
+  if (user) {
+    createdGroup = await assignCreatorAndCreateGroup(user, input);
+  } else {
+    const { decodeTokenError, expiredTokenError } = errors;
+    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+    // Use apollo client httpLinks auto refetch functionality
+    // to get the user a new JWT for the decodeTokenError case.
+    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  }
+  return createdGroup;
 };
 
 module.exports = {
-  allGroups: allGroups,
-  createGroupWithAssignedCreator: createGroupWithAssignedCreator,
-  resetGroups: resetGroups
+  createGroupIfUserAuthorizationSuccess: createGroupIfUserAuthorizationSuccess
 };

@@ -1,6 +1,5 @@
-const { allGroups, createGroupWithAssignedCreator } = require("../services");
+const { createGroupIfUserAuthorizationSuccess } = require("../services");
 const { getUserById } = require("../../Accounts/services");
-const authorizeRequest = require("../../authorization");
 
 const resolvers = {
   Query: {
@@ -10,24 +9,23 @@ const resolvers = {
     }
   },
   Mutation: {
-    createGroup: async (_parentValue, args, { headers: { authorization } }) => {
-      let createdGroup;
-      const { user, expired } = await authorizeRequest(authorization);
-      if (user) {
-        createdGroup = await createGroupWithAssignedCreator(user, args.input);
-      }
-      // More than likely won't be necessary
-      // pubsub.publish("groupCreated", {
-      //   groupCreated: createdGroup,
-      //   channelId: createdGroup.channelId
-      // });
-      return createdGroup || expired;
+    createGroup: async (
+      _parentValue,
+      { input },
+      { headers: { authorization } }
+    ) => {
+      const createdGroup = await createGroupIfUserAuthorizationSuccess(
+        input,
+        authorization
+      );
+      return createdGroup;
     }
     // deleteGroup
   },
   Group: {
-    creator: async (parentValue, _args, _context) => {
-      return await getUserById(parentValue.creator);
+    creator: async ({ creator }, _args, _context) => {
+      console.log("GETTING TO CREATOR RESOLVER");
+      return await getUserById(creator);
     }
   }
   // Subscription: {
@@ -44,3 +42,9 @@ const resolvers = {
 };
 
 module.exports = resolvers;
+
+// More than likely won't be necessary
+// pubsub.publish("groupCreated", {
+//   groupCreated: createdGroup,
+//   channelId: createdGroup.channelId
+// });
