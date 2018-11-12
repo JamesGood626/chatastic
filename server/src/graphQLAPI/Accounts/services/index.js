@@ -1,28 +1,77 @@
-let users = [];
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+const User = require("../model/user");
+const hashPasswordAndSaveUser = require("./bcryptUtils");
+const { JWT_SECRET } = require("../../../config");
 
-const allUsers = () => {
-  return Promise.resolve(users);
+// const allUsers = () => {
+//   return Promise.resolve(users);
+// };
+
+// Unit test this...
+const createJWToken = userCredentials => {
+  // expires in one week.
+  const token = jwt.sign(userCredentials, JWT_SECRET, {
+    expiresIn: 60 * 10080
+  });
+  return { token };
 };
 
-const createUser = args => {
-  const user = args.input;
-  users.push(user);
-  return Promise.resolve(user);
+const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
+  if (err) {
+    reject(err);
+  }
+  if (!user) {
+    reject("Username or password is incorrect.");
+  } else {
+    const { username, password } = user;
+    resolve(createJWToken({ username, password }));
+  }
 };
 
-const loginUser = args => {
-  const username = args.input.username;
-  // users.push(user);
-  const user = users[0];
-  return Promise.resolve(user);
+const createUser = input => {
+  console.log("CREATING USER: ", input);
+  return new Promise(async (resolve, reject) => {
+    const { firstname, lastname, username, password } = input;
+    try {
+      const user = await User.findOne({ username });
+      if (user) {
+        console.log("USER ALREADY EXISTS: ", user);
+        return reject("User already exists");
+      } else {
+        const newUser = new User({ firstname, lastname, username });
+        // Add in if else to lower saltRounds during testing
+        await hashPasswordAndSaveUser(newUser, password);
+        resolve(createJWToken({ username, password }));
+      }
+    } catch (e) {
+      reject("Something went wrong while creating user.");
+    }
+  });
 };
 
-const resetUsers = () => {
-  users = [];
+const loginUser = (input, req) => {
+  const { username, password } = input;
+  console.log("Login is running.");
+  return new Promise((resolve, reject) => {
+    passport.authenticate("local", (err, user, _info, _status) => {
+      return verifyUserAuthenticationResult(user, err, resolve, reject);
+    })({ body: { username, password } });
+  });
 };
 
 module.exports = {
-  allUsers: allUsers,
+  // allUsers: allUsers,
   createUser: createUser,
-  resetUsers: resetUsers
+  loginUser: loginUser
 };
+
+// Gonna need to do this check somewhere in resolvers
+// After having put the token on the Authorization: Bearer <Token>
+// try {
+//   const decoded = jwt.verify(token, "wrong-secret");
+//   console.log("IT'S DECODED: ", decoded);
+// } catch (err) {
+//   // err
+//   console.log("ERR DECODING: ", err);
+// }

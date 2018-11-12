@@ -28,7 +28,6 @@ const groupSchema = new Schema({
   ]
 });
 
-// Necessary for testing, otherwise a second model will be created.
 const Group = mongoose.models.Group || mongoose.model("Group", groupSchema);
 
 module.exports = Group;

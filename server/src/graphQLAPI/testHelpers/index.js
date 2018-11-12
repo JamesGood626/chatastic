@@ -1,3 +1,5 @@
+const User = require("../Accounts/model/user");
+
 const graphQLQueryRequest = (operation, opName) => {
   const operationInfo = {
     query: operation,
@@ -25,8 +27,51 @@ const postRequest = async (createdRequest, operationInfo) => {
   return response;
 };
 
+const dropUserCollection = async () => {
+  await User.remove({}, err => {
+    if (err !== null) {
+      console.log("User Collection Drop Error: ", err);
+    }
+  });
+};
+
+const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
+                              createUser(input: $input) {
+                                token
+                              }
+                            }`;
+
+const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
+                            loginUser(input: $input) {
+                              token
+                            }
+                          }`;
+
+const createUserGraphQLRequest = async (createdRequest, user) => {
+  const operationInfo = await graphQLMutationRequest(
+    user,
+    createUserMutation,
+    "createUserOp"
+  );
+  const response = await postRequest(createdRequest, operationInfo);
+  return response;
+};
+
+const loginUserGraphQLRequest = async (createdRequest, user) => {
+  const operationInfo = await graphQLMutationRequest(
+    user,
+    loginUserMutation,
+    "loginUserOp"
+  );
+  const response = await postRequest(createdRequest, operationInfo);
+  return response;
+};
+
 module.exports = {
   graphQLQueryRequest: graphQLQueryRequest,
   graphQLMutationRequest: graphQLMutationRequest,
-  postRequest: postRequest
+  postRequest: postRequest,
+  dropUserCollection: dropUserCollection,
+  createUserGraphQLRequest: createUserGraphQLRequest,
+  loginUserGraphQLRequest: loginUserGraphQLRequest
 };

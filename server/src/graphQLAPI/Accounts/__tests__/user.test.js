@@ -1,11 +1,16 @@
 const request = require("supertest");
-const { httpServer, apolloServer, app } = require("../../../app");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../../../config");
+const { httpServer, apolloServer } = require("../../../app");
 const {
   graphQLQueryRequest,
   graphQLMutationRequest,
-  postRequest
+  postRequest,
+  dropUserCollection,
+  createUserGraphQLRequest,
+  loginUserGraphQLRequest
 } = require("../../testHelpers");
-const { resetUsers } = require("../services");
+const { createUser } = require("../services");
 
 // NOTE: write this down in ipad for later reference
 // There was a slight difference in what I had to implement
@@ -18,20 +23,21 @@ const { resetUsers } = require("../services");
 // appropriately. Removing that did the trick.
 
 const userOne = {
-  id: 1,
-  channelId: 1,
   firstname: "Sam",
   lastname: "Holland",
-  username: "ShSquared",
+  username: "BamBamSam",
   password: "supa-secret"
 };
 
 const userTwo = {
-  id: 2,
-  channelId: 1,
-  firstname: "Veronica",
-  lastname: "Moneymaker",
-  username: "Dollabills",
+  firstname: "Sarah",
+  lastname: "Holland",
+  username: "BamBamSar",
+  password: "supa-secret"
+};
+
+const userLoginInput = {
+  username: "BamBamSam",
   password: "supa-secret"
 };
 
@@ -45,31 +51,11 @@ const allUsersQuery = `query allUsersOp{
                         }
                       }`;
 
-const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
-                              createUser(input: $input) {
-                                id
-                                firstname
-                                lastname
-                                username
-                                password
-                              }
-                            }`;
-
-const allUsersGraphQLRequest = async createdRequest => {
-  const operationInfo = await graphQLQueryRequest(allUsersQuery, "allUsersOp");
-  const response = await postRequest(createdRequest, operationInfo);
-  return response;
-};
-
-const createUserGraphQLRequest = async (createdRequest, user = userOne) => {
-  const operationInfo = await graphQLMutationRequest(
-    user,
-    createUserMutation,
-    "createUserOp"
-  );
-  const response = await postRequest(createdRequest, operationInfo);
-  return response;
-};
+// const allUsersGraphQLRequest = async createdRequest => {
+//   const operationInfo = await graphQLQueryRequest(allUsersQuery, "allUsersOp");
+//   const response = await postRequest(createdRequest, operationInfo);
+//   return response;
+// };
 
 describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
@@ -79,19 +65,15 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     server = await httpServer.listen(1000);
     createdRequest = await request.agent(server);
     done();
-    // console.log("THE createdRequest: ", createdRequest);
   });
 
-  beforeEach(() => {
-    resetUsers();
+  afterEach(async done => {
+    await dropUserCollection();
+    done();
   });
 
   afterAll(async done => {
     await server.close(done);
-  });
-
-  test("user is one", () => {
-    expect(1 + 1).toBe(2);
   });
 
   // test("get all users", async done => {
@@ -102,11 +84,25 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
   //   done();
   // });
 
-  // test("create a user", async done => {
-  //   const response = await createUserGraphQLRequest(createdRequest);
-  //   expect(response.body.data.createUser.firstname).toBe("Sam");
-  //   done();
-  // });
+  test("create a user", async done => {
+    const response = await createUserGraphQLRequest(createdRequest, userOne);
+    const { token } = response.body.data.createUser;
+    expect(typeof token).toBe("string");
+    expect(token.length).toBeGreaterThan(150);
+    done();
+  });
 
-  // Get User by Id I'll test once mongoDB is implemented
+  test("login a user", async done => {
+    await createUserGraphQLRequest(createdRequest, userOne);
+    const response = await loginUserGraphQLRequest(
+      createdRequest,
+      userLoginInput
+    );
+    const { token } = response.body.data.loginUser;
+    expect(typeof token).toBe("string");
+    expect(token.length).toBeGreaterThan(150);
+    done();
+  });
+
+  // get user by email for invitation purposes if time allows
 });
