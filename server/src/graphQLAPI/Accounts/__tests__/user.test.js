@@ -86,9 +86,15 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
 
   test("create a user", async done => {
     const response = await createUserGraphQLRequest(createdRequest, userOne);
-    const { firstname, lastname, token } = response.body.data.createUser;
+    const {
+      firstname,
+      lastname,
+      username,
+      token
+    } = response.body.data.createUser;
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
+    expect(username).toBe("BamBamSam");
     expect(typeof token).toBe("string");
     expect(token.length).toBeGreaterThan(150);
     done();
@@ -100,9 +106,15 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       createdRequest,
       userLoginInput
     );
-    const { firstname, lastname, token } = response.body.data.loginUser;
+    const {
+      firstname,
+      lastname,
+      username,
+      token
+    } = response.body.data.loginUser;
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
+    expect(username).toBe("BamBamSam");
     expect(typeof token).toBe("string");
     expect(token.length).toBeGreaterThan(150);
     done();

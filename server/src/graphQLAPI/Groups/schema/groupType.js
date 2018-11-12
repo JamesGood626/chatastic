@@ -4,14 +4,15 @@ const { gql } = require("apollo-server-express");
 const GroupTypeDef = gql`
   type Group {
     id: String!
-    channelId: String!
+    channel: String!
     title: String
+    creator: User!
     chats: [Chat]
     members: [User]
   }
 
   input CreateGroupInput {
-    channelId: String!
+    channel: String!
     title: String!
   }
 `;

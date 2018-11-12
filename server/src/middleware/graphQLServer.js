@@ -43,7 +43,8 @@ const applyGraphQL = app => {
     typeDefs,
     resolvers,
     context: ({ req }) => ({
-      req: req ? req : undefined
+      headers: req.headers ? req.headers : null,
+      req: req ? req : null
     })
   });
 

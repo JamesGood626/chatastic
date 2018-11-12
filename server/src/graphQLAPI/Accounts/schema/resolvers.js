@@ -18,7 +18,6 @@ const resolvers = {
       return token;
     },
     loginUser: (_parentValue, { input }, { req }) => {
-      console.log("LOGIN USER HIT: ", input);
       return loginUser(input, req);
     }
   },

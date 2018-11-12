@@ -3,30 +3,36 @@ const { httpServer, apolloServer, app } = require("../../../app");
 const {
   graphQLQueryRequest,
   graphQLMutationRequest,
-  postRequest
+  postRequest,
+  postRequestWithHeaders,
+  dropUserCollection,
+  dropGroupCollection,
+  createUserGraphQLRequest,
+  loginUserGraphQLRequest
 } = require("../../testHelpers");
 const { resetGroups } = require("../services");
 
-// input CreateGroupInput {
-//   id: Int!
-//   channelId: Int!
-//   title: String!
-// }
+const user = {
+  firstname: "Joe",
+  lastname: "Salmon",
+  username: "joesal",
+  password: "sardines"
+};
 
 const groupOne = {
-  channelId: "1",
+  channel: "1",
   title: "Group One"
 };
 
 const groupTwo = {
-  channelId: "2",
+  channel: "2",
   title: "Group Two"
 };
 
 const allGroupsQuery = `query allGroupsOp{
   allGroups {
     id
-    channelId
+    channel
     title
   }
 }`;
@@ -34,8 +40,11 @@ const allGroupsQuery = `query allGroupsOp{
 const createGroupMutation = `mutation createGroupOp($input: CreateGroupInput!) {
   createGroup(input: $input) {
     id
-    channelId
+    channel
     title
+    creator {
+      username
+    }
   }
 }`;
 
@@ -48,13 +57,22 @@ const allGroupsGraphQLRequest = async createdRequest => {
   return response;
 };
 
-const createGroupGraphQLRequest = async (createdRequest, group = groupOne) => {
+const createGroupGraphQLRequest = async (
+  createdRequest,
+  token,
+  group = groupOne
+) => {
   const operationInfo = await graphQLMutationRequest(
     group,
     createGroupMutation,
     "createGroupOp"
   );
-  const response = await postRequest(createdRequest, operationInfo);
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+
   return response;
 };
 
@@ -68,8 +86,10 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  afterEach(() => {
-    resetGroups();
+  afterEach(async done => {
+    await dropUserCollection();
+    await dropGroupCollection();
+    done();
   });
 
   afterAll(async done => {
@@ -77,9 +97,16 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
   });
 
   test("create a group", async done => {
-    const response = await createGroupGraphQLRequest(createdRequest);
-    console.log("THE RESPONSE BODY: ", response.body);
-    expect(response.body.data.createGroup.title).toBe("Group One");
+    const createUserResponse = await createUserGraphQLRequest(
+      createdRequest,
+      user
+    );
+    const { token } = createUserResponse.body.data.createUser;
+    const response = await createGroupGraphQLRequest(createdRequest, token);
+    const { channel, title, creator } = response.body.data.createGroup;
+    expect(channel).toBe("1");
+    expect(title).toBe("Group One");
+    expect(creator.username).toBe("joesal");
     done();
   });
 

@@ -1,4 +1,5 @@
 const User = require("../Accounts/model/user");
+const Group = require("../Groups/model/group");
 
 const graphQLQueryRequest = (operation, opName) => {
   const operationInfo = {
@@ -27,6 +28,15 @@ const postRequest = async (createdRequest, operationInfo) => {
   return response;
 };
 
+const postRequestWithHeaders = async (createdRequest, operationInfo, token) => {
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .set("Authorization", `Bearer ${token}`)
+    .send(operationInfo);
+  return response;
+};
+
 const dropUserCollection = async () => {
   await User.remove({}, err => {
     if (err !== null) {
@@ -35,10 +45,19 @@ const dropUserCollection = async () => {
   });
 };
 
+const dropGroupCollection = async () => {
+  await Group.remove({}, err => {
+    if (err !== null) {
+      console.log("Group Collection Drop Error: ", err);
+    }
+  });
+};
+
 const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
                               createUser(input: $input) {
                                 firstname
                                 lastname
+                                username
                                 token
                               }
                             }`;
@@ -47,6 +66,7 @@ const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
                             loginUser(input: $input) {
                               firstname
                               lastname
+                              username
                               token
                             }
                           }`;
@@ -75,7 +95,9 @@ module.exports = {
   graphQLQueryRequest: graphQLQueryRequest,
   graphQLMutationRequest: graphQLMutationRequest,
   postRequest: postRequest,
+  postRequestWithHeaders: postRequestWithHeaders,
   dropUserCollection: dropUserCollection,
+  dropGroupCollection: dropGroupCollection,
   createUserGraphQLRequest: createUserGraphQLRequest,
   loginUserGraphQLRequest: loginUserGraphQLRequest
 };
