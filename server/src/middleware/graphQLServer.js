@@ -41,14 +41,10 @@ const applyGraphQL = app => {
 
   const apolloServer = new ApolloServer({
     typeDefs,
-    resolvers
-    // context: ({ req }) => ({
-    //   headers: req.headers
-    // })
-    // playground: {
-    //   endpoint: "/graphql",
-    //   subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`
-    // }
+    resolvers,
+    context: ({ req }) => ({
+      req: req ? req : undefined
+    })
   });
 
   apolloServer.applyMiddleware({ app });

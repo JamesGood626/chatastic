@@ -1,21 +1,25 @@
 const { pubsub, withFilter } = require("../../pubsub");
-const { allUsers, createUser } = require("../services");
+const { createUser, loginUser } = require("../services");
 
 const resolvers = {
   Query: {
     allUsers: async (_parentValue, _args, _context) => {
-      const users = await allUsers();
-      return users;
+      // const users = await allUsers();
+      return [];
     }
   },
   Mutation: {
-    createUser: async (_parentValue, args, _context) => {
-      const createdUser = await createUser(args);
+    createUser: async (_parentValue, { input }, _context) => {
+      const token = await createUser(input);
       // pubsub.publish("userCreated", {
       //   userCreated: createdUser,
       //   channelId: createdUser.channelId
       // });
-      return createdUser;
+      return token;
+    },
+    loginUser: (_parentValue, { input }, { req }) => {
+      console.log("LOGIN USER HIT: ", input);
+      return loginUser(input, req);
     }
   },
   Subscription: {
@@ -27,6 +31,22 @@ const resolvers = {
           return payload.channelId === variables.channelId;
         }
       )
+    }
+  },
+  User: {
+    groups: async (parentValue, _args, { req }) => {
+      // parentValue will the be returned value from any of the queries/mutations that will
+      // be accessible in here whenever the products field is a requested return value
+      // on the query/mutation.
+      // return await retrieveOrderList(parentValue.order);
+      return [];
+    },
+    chats: async (parentValue, _args, { req }) => {
+      // parentValue will the be returned value from any of the queries/mutations that will
+      // be accessible in here whenever the products field is a requested return value
+      // on the query/mutation.
+      // return await retrieveOrderList(parentValue.order);
+      return [];
     }
   }
 };

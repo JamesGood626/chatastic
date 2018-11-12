@@ -7,7 +7,8 @@ const queryTypeDef = gql`
   }
 
   type Mutation {
-    createUser(input: CreateUserInput!): User
+    createUser(input: CreateUserInput!): Token
+    loginUser(input: LoginUserInput!): Token
     createGroup(input: CreateGroupInput!): Group
     createDirectChat(input: CreateDirectChatInput!): Chat
     createGroupChat(input: CreateGroupChatInput!): Chat
