@@ -28,20 +28,31 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
     const authorization = {
       firstname,
       lastname,
+      username,
       token: createJWToken({ username, password })
     };
     resolve(authorization);
   }
 };
 
+const getUserByUsername = async username => {
+  const user = await User.findOne({ username });
+  console.log("FOUND USER: ", user);
+  return user;
+};
+
+const getUserById = async id => {
+  const user = await User.findById(id);
+  console.log("FOUND USER BY ID: ", user);
+  return user;
+};
+
 const createUser = input => {
-  console.log("CREATING USER: ", input);
   return new Promise(async (resolve, reject) => {
     const { firstname, lastname, username, password } = input;
     try {
       const user = await User.findOne({ username });
       if (user) {
-        console.log("USER ALREADY EXISTS: ", user);
         return reject("User already exists");
       } else {
         const newUser = new User({ firstname, lastname, username });
@@ -50,6 +61,7 @@ const createUser = input => {
         const authorization = {
           firstname,
           lastname,
+          username,
           token: createJWToken({ username, password })
         };
         resolve(authorization);
@@ -62,7 +74,6 @@ const createUser = input => {
 
 const loginUser = (input, req) => {
   const { username, password } = input;
-  console.log("Login is running.");
   return new Promise((resolve, reject) => {
     passport.authenticate("local", (err, user, _info, _status) => {
       return verifyUserAuthenticationResult(user, err, resolve, reject);
@@ -73,7 +84,9 @@ const loginUser = (input, req) => {
 module.exports = {
   // allUsers: allUsers,
   createUser: createUser,
-  loginUser: loginUser
+  loginUser: loginUser,
+  getUserByUsername: getUserByUsername,
+  getUserById: getUserById
 };
 
 // Gonna need to do this check somewhere in resolvers

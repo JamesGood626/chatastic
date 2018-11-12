@@ -6,13 +6,16 @@ const groupSchema = new Schema({
     type: Number
     // required: true
   },
-  channelId: {
+  channel: {
     type: String,
     required: true
   },
   title: {
-    type: String,
-    required: true
+    type: String
+  },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
   },
   chats: [
     {

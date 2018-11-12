@@ -25,12 +25,25 @@ const createGroup = input => {
   });
 };
 
+const createGroupWithAssignedCreator = async (user, input) => {
+  let createdGroup;
+  if ((user, input)) {
+    input.creator = user._id;
+    if (user) {
+      createdGroup = await createGroup(input);
+      return createdGroup;
+    } else {
+      throw new Error("Something went wrong while creating group");
+    }
+  }
+};
+
 const resetGroups = () => {
   groups = [];
 };
 
 module.exports = {
   allGroups: allGroups,
-  createGroup: createGroup,
+  createGroupWithAssignedCreator: createGroupWithAssignedCreator,
   resetGroups: resetGroups
 };

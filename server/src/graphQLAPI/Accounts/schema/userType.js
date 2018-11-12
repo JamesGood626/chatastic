@@ -21,6 +21,7 @@ const UserTypeDef = gql`
   type Authorization {
     firstname: String!
     lastname: String!
+    username: String!
     token: String!
   }
 
