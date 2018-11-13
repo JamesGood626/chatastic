@@ -6,29 +6,35 @@ const { ApolloServer } = require("apollo-server-express");
 const queryTypeDef = require("../GraphQLAPI");
 
 // TypeDefs
-const userTypeDefs = require("../GraphQLAPI/Accounts/schema/userType");
-const groupTypeDefs = require("../GraphQLAPI/Groups/schema/groupType");
-const chatTypeDefs = require("../GraphQLAPI/Chats/schema/chatType");
-const messageTypeDefs = require("../GraphQLAPI/Messages/schema/messageType");
+const { dateScalarSchema } = require("../graphQLAPI/customScalars/dateScalar");
+const userTypeDefs = require("../graphQLAPI/Accounts/schema/userType");
+const groupTypeDefs = require("../graphQLAPI/Groups/schema/groupType");
+const chatTypeDefs = require("../graphQLAPI/Chats/schema/chatType");
+const messageTypeDefs = require("../graphQLAPI/Messages/schema/messageType");
 
 // Resolvers
-const userResolvers = require("../GraphQLAPI/Accounts/schema/resolvers");
-const groupResolvers = require("../GraphQLAPI/Groups/schema/resolvers");
-const chatResolvers = require("../GraphQLAPI/Chats/schema/resolvers");
-const messageResolvers = require("../GraphQLAPI/Messages/schema/resolvers");
+const {
+  dateScalarResolver
+} = require("../graphQLAPI/customScalars/dateScalar");
+const userResolvers = require("../graphQLAPI/Accounts/schema/resolvers");
+const groupResolvers = require("../graphQLAPI/Groups/schema/resolvers");
+const chatResolvers = require("../graphQLAPI/Chats/schema/resolvers");
+const messageResolvers = require("../graphQLAPI/Messages/schema/resolvers");
 
 const typeDefs = [
   queryTypeDef,
   userTypeDefs,
   groupTypeDefs,
   chatTypeDefs,
-  messageTypeDefs
+  messageTypeDefs,
+  dateScalarSchema
 ];
 const resolvers = [
   userResolvers,
   groupResolvers,
   chatResolvers,
-  messageResolvers
+  messageResolvers,
+  dateScalarResolver
 ];
 
 const applyGraphQL = app => {

@@ -6,6 +6,7 @@ const GroupTypeDef = gql`
     id: String!
     channel: String!
     title: String
+    creationDate: Date!
     creator: User!
     chats: [Chat]
     members: [User]
@@ -14,6 +15,7 @@ const GroupTypeDef = gql`
   input CreateGroupInput {
     channel: String!
     title: String!
+    creationDate: Date!
   }
 `;
 

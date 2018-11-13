@@ -1,5 +1,7 @@
 const { gql } = require("apollo-server-express");
 
+// createMessage(input: MessageInExistingChatInput!): Message
+
 const queryTypeDef = gql`
   type Query {
     allUsers: [User]
@@ -7,16 +9,15 @@ const queryTypeDef = gql`
   }
 
   type Mutation {
-    createUser(input: CreateUserInput!): Authorization
-    loginUser(input: LoginUserInput!): Authorization
+    createUser(input: CreateUserInput!): Authenticated
+    loginUser(input: LoginUserInput!): Authenticated
     createGroup(input: CreateGroupInput!): Group
     createDirectChat(input: CreateDirectChatInput!): Chat
     createGroupChat(input: CreateGroupChatInput!): Chat
-    createMessage(input: MessageInput!): Message
   }
 
   type Subscription {
-    userCreated(channelId: Int!): User
+    userCreated(channel: String!): User
   }
 `;
 

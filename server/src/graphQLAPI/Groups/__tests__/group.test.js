@@ -10,7 +10,7 @@ const {
   createUserGraphQLRequest,
   loginUserGraphQLRequest
 } = require("../../testHelpers");
-const { resetGroups } = require("../services");
+// const { resetGroups } = require("../services");
 
 const user = {
   firstname: "Joe",
@@ -21,7 +21,8 @@ const user = {
 
 const groupOne = {
   channel: "1",
-  title: "Group One"
+  title: "Group One",
+  creationDate: Date.now()
 };
 
 const groupTwo = {
@@ -76,7 +77,7 @@ const createGroupGraphQLRequest = async (
   return response;
 };
 
-describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
+describe("With Group resources a user may", () => {
   let createdRequest;
   let server;
 
@@ -103,7 +104,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     );
     const { token } = createUserResponse.body.data.createUser;
     const response = await createGroupGraphQLRequest(createdRequest, token);
-    console.log("RESPONSE BODY: ", response.body);
     const { channel, title, creator } = response.body.data.createGroup;
     expect(channel).toBe("1");
     expect(title).toBe("Group One");

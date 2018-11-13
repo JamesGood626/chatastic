@@ -34,7 +34,7 @@ const createMessageGraphQLRequest = async (
   return response;
 };
 
-describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
+describe("With Message resources a user may", () => {
   let createdRequest;
   let server;
 
@@ -44,9 +44,9 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  beforeEach(() => {
-    resetMessages();
-  });
+  // beforeEach(() => {
+  //   resetMessages();
+  // });
 
   afterAll(async done => {
     await server.close(done);

@@ -19,24 +19,22 @@ const createGroup = input => {
   });
 };
 
-const assignCreatorAndCreateGroup = async (user, input) => {
+const assignCreatorAndCreateGroup = async (userId, input) => {
   let createdGroup;
-  if ((user, input)) {
-    input.creator = user._id;
-    if (user) {
-      createdGroup = await createGroup(input);
-      return createdGroup;
-    } else {
-      throw new Error("Something went wrong while creating group");
-    }
+  if (userId && input) {
+    input.creator = userId;
+    createdGroup = await createGroup(input);
+    return createdGroup;
+  } else {
+    throw new Error("Something went wrong while creating group");
   }
 };
 
-const createGroupIfUserAuthorizationSuccess = async (input, authorization) => {
+const createGroupIfAuthorized = async (input, authorization) => {
   let createdGroup;
-  const { user, errors } = await authorizeRequest(authorization);
-  if (user) {
-    createdGroup = await assignCreatorAndCreateGroup(user, input);
+  const { userId, errors } = await authorizeRequest(authorization);
+  if (userId) {
+    createdGroup = await assignCreatorAndCreateGroup(userId, input);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
@@ -48,5 +46,5 @@ const createGroupIfUserAuthorizationSuccess = async (input, authorization) => {
 };
 
 module.exports = {
-  createGroupIfUserAuthorizationSuccess: createGroupIfUserAuthorizationSuccess
+  createGroupIfAuthorized: createGroupIfAuthorized
 };

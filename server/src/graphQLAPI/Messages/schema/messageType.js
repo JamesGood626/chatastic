@@ -1,16 +1,22 @@
 const { gql } = require("apollo-server-express");
 
-// Still need to implement date scalar.
-// Read that new graphql book you got.
 const MessageTypeDef = gql`
   type Message {
-    channelId: String!
+    channel: String!
     text: String!
+    sentDate: Date!
+    sender: User!
   }
 
-  input MessageInput {
-    channelId: String!
+  input MessageInNewChatInput {
     text: String!
+    sentDate: Date!
+  }
+
+  input MessageInExistingChatInput {
+    channel: String!
+    text: String!
+    sentDate: Date!
   }
 `;
 
