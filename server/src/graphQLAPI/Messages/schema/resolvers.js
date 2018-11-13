@@ -1,16 +1,22 @@
 const { pubsub, withFilter } = require("../../pubsub");
 const { createMessage } = require("../services");
+const { getUserById } = require("../../Accounts/services");
 
 const resolvers = {
   Query: {},
   Mutation: {
-    createMessage: async (_parentValue, args, _context) => {
-      const createdMessage = await createMessage(args);
-      // pubsub.publish("MessageCreated", {
-      //   MessageCreated: createdMessage,
-      //   channelId: createdMessage.channelId
-      // });
-      return createdMessage;
+    // createMessage: async (_parentValue, { input }, _context) => {
+    //   const createdMessage = await createMessage(input);
+    //   // pubsub.publish("MessageCreated", {
+    //   //   MessageCreated: createdMessage,
+    //   //   channelId: createdMessage.channelId
+    //   // });
+    //   return createdMessage;
+    // }
+  },
+  Message: {
+    sender: async ({ sender }, _args, _context) => {
+      return await getUserById(sender);
     }
   }
   // Subscription: {

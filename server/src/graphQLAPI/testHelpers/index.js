@@ -1,5 +1,7 @@
 const User = require("../Accounts/model/user");
 const Group = require("../Groups/model/group");
+const Chat = require("../Chats/model/chat");
+const Message = require("../Messages/model/message");
 
 const graphQLQueryRequest = (operation, opName) => {
   const operationInfo = {
@@ -53,12 +55,29 @@ const dropGroupCollection = async () => {
   });
 };
 
+const dropChatCollection = async () => {
+  await Chat.remove({}, err => {
+    if (err !== null) {
+      console.log("Chat Collection Drop Error: ", err);
+    }
+  });
+};
+
+const dropMessageCollection = async () => {
+  await Message.remove({}, err => {
+    if (err !== null) {
+      console.log("Message Collection Drop Error: ", err);
+    }
+  });
+};
+
 const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
                               createUser(input: $input) {
                                 firstname
                                 lastname
                                 username
                                 token
+                                uuid
                               }
                             }`;
 
@@ -98,6 +117,8 @@ module.exports = {
   postRequestWithHeaders: postRequestWithHeaders,
   dropUserCollection: dropUserCollection,
   dropGroupCollection: dropGroupCollection,
+  dropChatCollection: dropChatCollection,
+  dropMessageCollection: dropMessageCollection,
   createUserGraphQLRequest: createUserGraphQLRequest,
   loginUserGraphQLRequest: loginUserGraphQLRequest
 };

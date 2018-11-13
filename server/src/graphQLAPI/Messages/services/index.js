@@ -1,16 +1,28 @@
-let messages = [];
+const Message = require("../model/message");
 
-const createMessage = args => {
-  const message = args.input;
-  messages.push(message);
-  return Promise.resolve(message);
+const createMessage = input => {
+  return new Promise(async (resolve, reject) => {
+    const message = new Message(input);
+    try {
+      await message.save();
+      resolve(message);
+    } catch (e) {
+      console.log("Error saving message: ", e);
+      reject(e.message);
+    }
+  });
 };
 
-const resetMessages = () => {
-  messages = [];
+const retrieveMessageList = async messageIdArr => {
+  if (messageIdArr.length > 1) {
+    return await Message.find({ _id: { $in: messageIdArr } });
+  } else {
+    const message = await Message.findById(messageIdArr[0]);
+    return [message];
+  }
 };
 
 module.exports = {
   createMessage: createMessage,
-  resetMessages: resetMessages
+  retrieveMessageList: retrieveMessageList
 };

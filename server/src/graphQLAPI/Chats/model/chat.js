@@ -2,17 +2,16 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const chatSchema = new Schema({
-  uuid: {
-    type: Number
-    // required: true
-  },
-  channelId: {
+  channel: {
     type: String,
     required: true
   },
   title: {
-    type: String,
-    required: true
+    type: String
+  },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
   },
   messages: [
     {

@@ -4,11 +4,6 @@ const User = require("../model/user");
 const hashPasswordAndSaveUser = require("./bcryptUtils");
 const { JWT_SECRET } = require("../../../config");
 
-// const allUsers = () => {
-//   return Promise.resolve(users);
-// };
-
-// Unit test this...
 const createJWToken = userCredentials => {
   // expires in one week.
   const token = jwt.sign(userCredentials, JWT_SECRET, {
@@ -41,8 +36,13 @@ const getUserByUsername = async username => {
   return user;
 };
 
+const getUserByUuid = async uuid => {
+  const user = await User.findOne({ uuid });
+  console.log("FOUND USER BY UUID: ", user);
+  return user;
+};
+
 const getUserById = async id => {
-  console.log("ATTEMPTING TO FIND BY ID");
   const user = await User.findById(id);
   console.log("FOUND USER BY ID: ", user);
   return user;
@@ -58,11 +58,12 @@ const createUser = input => {
       } else {
         const newUser = new User({ firstname, lastname, username });
         // Add in if else to lower saltRounds during testing
-        await hashPasswordAndSaveUser(newUser, password);
+        const { uuid } = await hashPasswordAndSaveUser(newUser, password);
         const authorization = {
           firstname,
           lastname,
           username,
+          uuid,
           token: createJWToken({ username, password })
         };
         resolve(authorization);
@@ -87,6 +88,7 @@ module.exports = {
   createUser: createUser,
   loginUser: loginUser,
   getUserByUsername: getUserByUsername,
+  getUserByUuid: getUserByUuid,
   getUserById: getUserById
 };
 

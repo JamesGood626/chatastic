@@ -1,4 +1,4 @@
-const { createGroupIfUserAuthorizationSuccess } = require("../services");
+const { createGroupIfAuthorized } = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
 const resolvers = {
@@ -14,17 +14,13 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
-      const createdGroup = await createGroupIfUserAuthorizationSuccess(
-        input,
-        authorization
-      );
+      const createdGroup = await createGroupIfAuthorized(input, authorization);
       return createdGroup;
     }
     // deleteGroup
   },
   Group: {
     creator: async ({ creator }, _args, _context) => {
-      console.log("GETTING TO CREATOR RESOLVER");
       return await getUserById(creator);
     }
   }

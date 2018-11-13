@@ -1,21 +1,16 @@
 const { pubsub, withFilter } = require("../../pubsub");
 const { createUser, loginUser } = require("../services");
+const { retrieveChatsList } = require("../../Chats/services");
 
 const resolvers = {
   Query: {
     allUsers: async (_parentValue, _args, _context) => {
-      // const users = await allUsers();
       return [];
     }
   },
   Mutation: {
     createUser: async (_parentValue, { input }, _context) => {
-      const token = await createUser(input);
-      // pubsub.publish("userCreated", {
-      //   userCreated: createdUser,
-      //   channelId: createdUser.channelId
-      // });
-      return token;
+      return await createUser(input);
     },
     loginUser: (_parentValue, { input }, { req }) => {
       return loginUser(input, req);
@@ -33,19 +28,11 @@ const resolvers = {
     }
   },
   User: {
-    groups: async (parentValue, _args, { req }) => {
-      // parentValue will the be returned value from any of the queries/mutations that will
-      // be accessible in here whenever the products field is a requested return value
-      // on the query/mutation.
-      // return await retrieveOrderList(parentValue.order);
+    groups: async (parentValue, _args, _context) => {
       return [];
     },
-    chats: async (parentValue, _args, { req }) => {
-      // parentValue will the be returned value from any of the queries/mutations that will
-      // be accessible in here whenever the products field is a requested return value
-      // on the query/mutation.
-      // return await retrieveOrderList(parentValue.order);
-      return [];
+    chats: async ({ chats }, _args, _context) => {
+      return await retrieveChatsList(chats);
     }
   }
 };

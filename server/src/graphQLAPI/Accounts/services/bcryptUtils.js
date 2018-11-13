@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const uuidv4 = require("uuid/v4");
 
 const hashPasswordAndSaveUser = (user, password, saltRounds = 10) => {
   return new Promise((resolve, reject) => {
@@ -11,6 +12,7 @@ const hashPasswordAndSaveUser = (user, password, saltRounds = 10) => {
           console.log("error hashing password: ", err);
         }
         user.password = hash;
+        user.uuid = uuidv4();
         await user.save();
         resolve(user);
       });
