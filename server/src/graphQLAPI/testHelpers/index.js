@@ -11,6 +11,17 @@ const graphQLQueryRequest = (operation, opName) => {
   return operationInfo;
 };
 
+const graphQLQueryWithVariablesRequest = (data, operation, opName) => {
+  const operationInfo = {
+    query: operation,
+    operationName: opName,
+    variables: {
+      input: data
+    }
+  };
+  return operationInfo;
+};
+
 const graphQLMutationRequest = (data, operation, opName) => {
   const operationInfo = {
     query: operation,
@@ -110,8 +121,58 @@ const loginUserGraphQLRequest = async (createdRequest, user) => {
   return response;
 };
 
+const createGroupMutation = `mutation createGroupOp($input: CreateGroupInput!) {
+  createGroup(input: $input) {
+    id
+    uuid
+    title
+    creator {
+      username
+    }
+  }
+}`;
+
+const createGroupGraphQLRequest = async (createdRequest, token, group) => {
+  const operationInfo = await graphQLMutationRequest(
+    group,
+    createGroupMutation,
+    "createGroupOp"
+  );
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+
+  return response;
+};
+
+const getGroupQuery = `query getGroupOp($input: GetGroupInput!) {
+  getGroup(input: $input) {
+    uuid
+    title
+    chats {
+      title
+    }
+    members {
+      firstname
+    }
+  }
+}`;
+
+const getGroupGraphQLRequest = async (createdRequest, input) => {
+  const operationInfo = await graphQLQueryWithVariablesRequest(
+    input,
+    getGroupQuery,
+    "getGroupOp"
+  );
+  const response = await postRequest(createdRequest, operationInfo);
+  return response;
+};
+
 module.exports = {
   graphQLQueryRequest: graphQLQueryRequest,
+  graphQLQueryWithVariablesRequest: graphQLQueryWithVariablesRequest,
   graphQLMutationRequest: graphQLMutationRequest,
   postRequest: postRequest,
   postRequestWithHeaders: postRequestWithHeaders,
@@ -120,5 +181,7 @@ module.exports = {
   dropChatCollection: dropChatCollection,
   dropMessageCollection: dropMessageCollection,
   createUserGraphQLRequest: createUserGraphQLRequest,
-  loginUserGraphQLRequest: loginUserGraphQLRequest
+  loginUserGraphQLRequest: loginUserGraphQLRequest,
+  createGroupGraphQLRequest: createGroupGraphQLRequest,
+  getGroupGraphQLRequest: getGroupGraphQLRequest
 };

@@ -1,11 +1,11 @@
-const { createGroupIfAuthorized } = require("../services");
-const { getUserById } = require("../../Accounts/services");
+const { getGroupByUuid, createGroupIfAuthorized } = require("../services");
+const { getUserById, retrieveMembersList } = require("../../Accounts/services");
+const { retrieveChatsList } = require("../../Chats/services");
 
 const resolvers = {
   Query: {
-    allGroups: async (_parentValue, _args, _context) => {
-      const groups = await allGroups();
-      return groups;
+    getGroup: async (_parentValue, { input: { groupUuid } }, _context) => {
+      return getGroupByUuid(groupUuid);
     }
   },
   Mutation: {
@@ -22,6 +22,12 @@ const resolvers = {
   Group: {
     creator: async ({ creator }, _args, _context) => {
       return await getUserById(creator);
+    },
+    chats: async ({ chats }, _args, _context) => {
+      return await retrieveChatsList(chats);
+    },
+    members: async ({ members }, _args, _context) => {
+      return await retrieveMembersList(members);
     }
   }
   // Subscription: {

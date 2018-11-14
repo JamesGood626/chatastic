@@ -15,7 +15,7 @@ const ChatTypeDef = gql`
   }
 
   input CreateGroupChatInput {
-    channel: String!
+    groupUuid: String!
     title: String!
   }
 `;

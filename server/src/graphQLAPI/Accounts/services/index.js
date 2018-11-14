@@ -83,21 +83,20 @@ const loginUser = (input, req) => {
   });
 };
 
+const retrieveMembersList = async memberIdArr => {
+  if (memberIdArr.length > 1) {
+    return await User.find({ _id: { $in: memberIdArr } });
+  } else {
+    const member = await User.findById(memberIdArr[0]);
+    return [member];
+  }
+};
+
 module.exports = {
-  // allUsers: allUsers,
   createUser: createUser,
   loginUser: loginUser,
   getUserByUsername: getUserByUsername,
   getUserByUuid: getUserByUuid,
-  getUserById: getUserById
+  getUserById: getUserById,
+  retrieveMembersList: retrieveMembersList
 };
-
-// Gonna need to do this check somewhere in resolvers
-// After having put the token on the Authorization: Bearer <Token>
-// try {
-//   const decoded = jwt.verify(token, "wrong-secret");
-//   console.log("IT'S DECODED: ", decoded);
-// } catch (err) {
-//   // err
-//   console.log("ERR DECODING: ", err);
-// }

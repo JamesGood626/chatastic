@@ -1,21 +1,24 @@
 const { gql } = require("apollo-server-express");
 
-// members should be : [User!]! in actuality
+// removed channel.
 const GroupTypeDef = gql`
   type Group {
     id: String!
-    channel: String!
-    title: String
+    uuid: String!
+    title: String!
     creationDate: Date!
     creator: User!
     chats: [Chat]
-    members: [User]
+    members: [User!]!
   }
 
   input CreateGroupInput {
-    channel: String!
     title: String!
     creationDate: Date!
+  }
+
+  input GetGroupInput {
+    groupUuid: String!
   }
 `;
 
