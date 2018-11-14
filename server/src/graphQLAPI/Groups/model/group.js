@@ -3,10 +3,6 @@ const Schema = mongoose.Schema;
 
 const groupSchema = new Schema({
   uuid: {
-    type: Number
-    // required: true
-  },
-  channel: {
     type: String,
     required: true
   },

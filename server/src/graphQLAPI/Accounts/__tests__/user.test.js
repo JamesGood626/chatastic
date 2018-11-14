@@ -57,7 +57,7 @@ const allUsersQuery = `query allUsersOp{
 //   return response;
 // };
 
-describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
+describe("With User resources a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 

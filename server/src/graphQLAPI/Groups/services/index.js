@@ -1,3 +1,4 @@
+const uuidv4 = require("uuid/v4");
 const { ForbiddenError } = require("apollo-server");
 const Group = require("../model/group");
 const authorizeRequest = require("../../authorization");
@@ -5,6 +6,11 @@ const {
   TOKEN_EXPIRED_MESSAGE,
   TOKEN_DECODING_MESSAGE
 } = require("../../errorMessages");
+
+const getGroupByUuid = async uuid => {
+  const group = await Group.findOne({ uuid });
+  return group;
+};
 
 const createGroup = input => {
   return new Promise(async (resolve, reject) => {
@@ -23,6 +29,8 @@ const assignCreatorAndCreateGroup = async (userId, input) => {
   let createdGroup;
   if (userId && input) {
     input.creator = userId;
+    input.uuid = uuidv4();
+    input.members = [userId];
     createdGroup = await createGroup(input);
     return createdGroup;
   } else {
@@ -46,5 +54,6 @@ const createGroupIfAuthorized = async (input, authorization) => {
 };
 
 module.exports = {
+  getGroupByUuid: getGroupByUuid,
   createGroupIfAuthorized: createGroupIfAuthorized
 };

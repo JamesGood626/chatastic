@@ -13,6 +13,9 @@ const createMessage = input => {
   });
 };
 
+// start this
+const createMessageIfAuthorized = (input, authorization) => {};
+
 const retrieveMessageList = async messageIdArr => {
   if (messageIdArr.length > 1) {
     return await Message.find({ _id: { $in: messageIdArr } });

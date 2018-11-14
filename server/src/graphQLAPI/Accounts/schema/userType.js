@@ -44,14 +44,8 @@ const UserTypeDef = gql`
 module.exports = UserTypeDef;
 
 // NOTE:
-// the addusertogroupinput and addusertochatinput
-// will be a reference ID to a mongo model once the DB is actually
-// implemented, so it'll switch over to being id: String instead.
+// need addusertogroupinput once I get around to that.
 
 // input AddUserToGroupInput {
 //   group: Group
-// }
-
-// input AddUserToChatInput {
-//   chat: Chat
 // }

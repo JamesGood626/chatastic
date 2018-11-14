@@ -20,12 +20,4 @@ const hashPasswordAndSaveUser = (user, password, saltRounds = 10) => {
   });
 };
 
-// const compareUserPassword = async (email, password) => {
-//   const retrievedUser = await User.findOne({ email }, (err, user) => user);
-//   if (retrievedUser) {
-//     return await bcrypt.compareSync(password, retrievedUser.password);
-//   }
-//   return false;
-// };
-
 module.exports = hashPasswordAndSaveUser;

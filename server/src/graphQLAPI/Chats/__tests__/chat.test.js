@@ -7,31 +7,44 @@ const {
   postRequestWithHeaders,
   dropUserCollection,
   dropChatCollection,
+  dropGroupCollection,
   dropMessageCollection,
   createUserGraphQLRequest,
-  loginUserGraphQLRequest
+  loginUserGraphQLRequest,
+  createGroupGraphQLRequest,
+  getGroupGraphQLRequest
 } = require("../../testHelpers");
 const { getUserByUuid } = require("../../Accounts/services");
+const { getGroupByUuid } = require("../../Groups/services");
 
 const userOne = {
-  firstname: "Joe",
+  firstname: "Sarah",
   lastname: "Salmon",
-  username: "joesal",
+  username: "sarsal",
   password: "sardines"
 };
 
 const userTwo = {
-  firstname: "Sam",
+  firstname: "Tom",
   lastname: "Scoggin",
-  username: "SamTimeTwo",
+  username: "TomTimeTwo",
   password: "theword"
 };
 
-const chatOne = {
+const directChat = {
   messageInput: {
     text: "The start of something amazing.",
     sentDate: Date.now()
   }
+};
+
+const groupChat = {
+  title: "Group Chat"
+};
+
+const groupOne = {
+  title: "Group One",
+  creationDate: Date.now()
 };
 
 const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDirectChatInput!) {
@@ -53,6 +66,12 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
                                     }
                                   }`;
 
+const createGroupChatMutation = `mutation createGroupChatOp($input: CreateGroupChatInput!) {
+                                    createGroupChat(input: $input) {
+                                      title
+                                    }
+                                  }`;
+
 const createDirectChatGraphQLRequest = async (createdRequest, token, chat) => {
   const operationInfo = await graphQLMutationRequest(
     chat,
@@ -68,7 +87,22 @@ const createDirectChatGraphQLRequest = async (createdRequest, token, chat) => {
   return response;
 };
 
-describe("With Chat resources a user may", () => {
+const createGroupChatGraphQLRequest = async (createdRequest, token, chat) => {
+  const operationInfo = await graphQLMutationRequest(
+    chat,
+    createGroupChatMutation,
+    "createGroupChatOp"
+  );
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+
+  return response;
+};
+
+describe("With Chat resources a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 
@@ -82,6 +116,7 @@ describe("With Chat resources a user may", () => {
     await dropUserCollection();
     await dropChatCollection();
     await dropMessageCollection();
+    await dropGroupCollection();
     done();
   });
 
@@ -103,11 +138,11 @@ describe("With Chat resources a user may", () => {
       token,
       uuid: senderUuid
     } = createUserTwoResponse.body.data.createUser;
-    chatOne.recipientUuid = uuid;
+    directChat.recipientUuid = uuid;
     const response = await createDirectChatGraphQLRequest(
       createdRequest,
       token,
-      chatOne
+      directChat
     );
     const { channel, messages } = response.body.data.createDirectChat;
     expect(channel.length).toBe(72);
@@ -117,7 +152,7 @@ describe("With Chat resources a user may", () => {
     expect(typeof messages[0].sentDate).toBe("number");
     const { sender } = messages[0];
     expect(sender.uuid).toBe(senderUuid);
-    expect(sender.firstname).toBe("Sam");
+    expect(sender.firstname).toBe("Tom");
     expect(sender.lastname).toBe("Scoggin");
     expect(sender.chats.length).toBe(1);
     // Now check the recipient user's chats length
@@ -125,6 +160,42 @@ describe("With Chat resources a user may", () => {
     expect(recipientUser.chats.length).toBe(1);
     // And finally, make sure they share the same chat
     expect(sender.chats[0].id).toBe(recipientUser.chats[0].toString());
+    done();
+  });
+
+  test("create a group chat", async done => {
+    const createUserResponse = await createUserGraphQLRequest(
+      createdRequest,
+      userTwo
+    );
+    const { token } = createUserResponse.body.data.createUser;
+    const createGroupResponse = await createGroupGraphQLRequest(
+      createdRequest,
+      token,
+      groupOne
+    );
+    // Need uuid for more testing after chat is added.
+    const { uuid } = createGroupResponse.body.data.createGroup;
+    groupChat.groupUuid = uuid;
+    const createGroupChatResponse = await createGroupChatGraphQLRequest(
+      createdRequest,
+      token,
+      groupChat
+    );
+    const { title } = createGroupChatResponse.body.data.createGroupChat;
+    const getGroupInput = {
+      groupUuid: uuid
+    };
+    const getGroupResponse = await getGroupGraphQLRequest(
+      createdRequest,
+      getGroupInput
+    );
+    const { chats, members } = getGroupResponse.body.data.getGroup;
+    expect(title).toBe("Group Chat");
+    expect(chats.length).toBe(1);
+    expect(chats[0].title).toBe("Group Chat");
+    expect(members.length).toBe(1);
+    expect(members[0].firstname).toBe("Tom");
     done();
   });
 });
