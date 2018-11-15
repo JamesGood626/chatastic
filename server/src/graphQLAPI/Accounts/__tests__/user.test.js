@@ -4,8 +4,10 @@ const { JWT_SECRET } = require("../../../config");
 const { httpServer, apolloServer } = require("../../../app");
 const {
   graphQLQueryRequest,
+  graphQLQueryWithVariablesRequest,
   graphQLMutationRequest,
   postRequest,
+  postRequestWithHeaders,
   dropUserCollection,
   createUserGraphQLRequest,
   loginUserGraphQLRequest
@@ -41,23 +43,39 @@ const userLoginInput = {
   password: "supa-secret"
 };
 
-const allUsersQuery = `query allUsersOp{
-                        allUsers {
-                          id
-                          firstname
-                          lastname
-                          username
-                          password
-                        }
-                      }`;
+const userSearchInput = {
+  username: "BamBamSam"
+};
 
-// const allUsersGraphQLRequest = async createdRequest => {
-//   const operationInfo = await graphQLQueryRequest(allUsersQuery, "allUsersOp");
-//   const response = await postRequest(createdRequest, operationInfo);
-//   return response;
-// };
+const userSearchQuery = `query getUserByUsernameOp ($input: UserSearchInput!) {
+                          getUserByUsername (input: $input) {
+                            uuid
+                            firstname
+                            lastname
+                            username
+                            message
+                          }
+                        }`;
 
-describe("With User resources a user may issue a GraphQL request to", () => {
+const getUserByUsernameGraphQLRequest = async (
+  createdRequest,
+  token,
+  userSearchInput
+) => {
+  const operationInfo = await graphQLQueryWithVariablesRequest(
+    userSearchInput,
+    userSearchQuery,
+    "getUserByUsernameOp"
+  );
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+  return response;
+};
+
+describe("With the User resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 
@@ -120,5 +138,23 @@ describe("With User resources a user may issue a GraphQL request to", () => {
     done();
   });
 
-  // get user by email for invitation purposes if time allows
+  test("get a user by username", async done => {
+    const createUserResponse = await createUserGraphQLRequest(
+      createdRequest,
+      userOne
+    );
+    const secondCreateUserResponse = await createUserGraphQLRequest(
+      createdRequest,
+      userTwo
+    );
+    const { token } = secondCreateUserResponse.body.data.createUser;
+    const userSearchResponse = await getUserByUsernameGraphQLRequest(
+      createdRequest,
+      token,
+      userSearchInput
+    );
+    // Pick up from here.
+    console.log("THE USER SEARCH RESPONSE BODY: ", userSearchResponse.body);
+    done();
+  });
 });

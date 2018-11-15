@@ -1,15 +1,20 @@
+const uuidv1 = require("uuid/v1");
 const uuidv4 = require("uuid/v4");
 const { ForbiddenError } = require("apollo-server");
 const Group = require("../model/group");
 const authorizeRequest = require("../../authorization");
+const { getUserById } = require("../../Accounts/services");
 const {
   TOKEN_EXPIRED_MESSAGE,
   TOKEN_DECODING_MESSAGE
 } = require("../../errorMessages");
 
+const getGroupById = async id => {
+  return await Group.findById(id);
+};
+
 const getGroupByUuid = async uuid => {
-  const group = await Group.findOne({ uuid });
-  return group;
+  return await Group.findOne({ uuid });
 };
 
 const createGroup = input => {
@@ -29,9 +34,14 @@ const assignCreatorAndCreateGroup = async (userId, input) => {
   let createdGroup;
   if (userId && input) {
     input.creator = userId;
-    input.uuid = uuidv4();
+    input.uuid = uuidv1() + uuidv4();
     input.members = [userId];
+    const user = await getUserById(userId);
+    // console.log("RETRIEVED USER SO I CAN NEST GROUP: ", user);
     createdGroup = await createGroup(input);
+    user.groups = [...user.groups, createdGroup._id];
+    await user.save();
+    // console.log("NESTED GROUP ON USER: ", user);
     return createdGroup;
   } else {
     throw new Error("Something went wrong while creating group");
@@ -53,7 +63,18 @@ const createGroupIfAuthorized = async (input, authorization) => {
   return createdGroup;
 };
 
+const retrieveGroupsList = async groupIdArr => {
+  if (groupIdArr.length > 1) {
+    return await Group.find({ _id: { $in: groupIdArr } });
+  } else {
+    const group = await Group.findById(groupIdArr[0]);
+    return [group];
+  }
+};
+
 module.exports = {
+  getGroupById: getGroupById,
   getGroupByUuid: getGroupByUuid,
-  createGroupIfAuthorized: createGroupIfAuthorized
+  createGroupIfAuthorized: createGroupIfAuthorized,
+  retrieveGroupsList: retrieveGroupsList
 };

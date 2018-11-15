@@ -1,9 +1,21 @@
 import React from "react";
+import styled from "styled-components";
+import SignUpForm from "./containers/SignUpForm";
 
-export default function index() {
+const Main = styled.main`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+`;
+
+const signUp = () => {
   return (
-    <div>
-      <h1>Signup</h1>
-    </div>
+    <Main>
+      <SignUpForm />
+    </Main>
   );
-}
+};
+
+export default signUp;

@@ -3,7 +3,7 @@ const {
   createDirectChatIfAuthorized,
   createGroupChatIfAuthorized
 } = require("../services");
-const { retrieveMessageList } = require("../../messages/services");
+const { retrieveMessageList } = require("../../Messages/services");
 
 const resolvers = {
   Query: {},

@@ -1,17 +1,21 @@
 const { gql } = require("apollo-server-express");
 
+// channel will be the user's uuid which first character is a greater value than the other
+// user's uuid userOneUuid + userTwoUuid + groupUuid; with userOne and userTwo determined by
+// the first character value of their uuids.
 const ChatTypeDef = gql`
   type Chat {
     id: String!
     channel: String!
     title: String
-    creator: User!
+    creator: User
     messages: [Message]
   }
 
   input CreateDirectChatInput {
     recipientUuid: String!
-    messageInput: MessageInNewChatInput!
+    senderUuid: String!
+    messageInput: createMessageInput!
   }
 
   input CreateGroupChatInput {

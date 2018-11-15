@@ -1,6 +1,7 @@
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
+const authorizeRequest = require("../../authorization");
 const hashPasswordAndSaveUser = require("./bcryptUtils");
 const { JWT_SECRET } = require("../../../config");
 
@@ -19,11 +20,12 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
   if (!user) {
     reject("Username or password is incorrect.");
   } else {
-    const { firstname, lastname, username, password } = user;
+    const { firstname, lastname, username, uuid, password } = user;
     const authorization = {
       firstname,
       lastname,
       username,
+      uuid,
       token: createJWToken({ username, password })
     };
     resolve(authorization);
@@ -32,20 +34,40 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
 
 const getUserByUsername = async username => {
   const user = await User.findOne({ username });
-  console.log("FOUND USER: ", user);
+  //console.log("FOUND USER: ", user);
   return user;
 };
 
 const getUserByUuid = async uuid => {
   const user = await User.findOne({ uuid });
-  console.log("FOUND USER BY UUID: ", user);
+  //console.log("FOUND USER BY UUID: ", user);
   return user;
 };
 
 const getUserById = async id => {
   const user = await User.findById(id);
-  console.log("FOUND USER BY ID: ", user);
+  //console.log("FOUND USER BY ID: ", user);
   return user;
+};
+
+const getUserByUsernameIfAuthorized = async (username, authorization) => {
+  console.log("THE AUTHORIZATION FOR USERNAME SEARCH: ", authorization);
+  let retrievedUser;
+  const { userId, errors } = await authorizeRequest(authorization);
+  if (userId) {
+    retrievedUser = await getUserByUsername(username);
+  } else {
+    const { decodeTokenError, expiredTokenError } = errors;
+    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+    // Use apollo client httpLinks auto refetch functionality
+    // to get the user a new JWT for the decodeTokenError case.
+    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  }
+  if (retrievedUser) {
+    return retrievedUser;
+  } else {
+    return { message: "User not found." };
+  }
 };
 
 const createUser = input => {
@@ -93,6 +115,7 @@ const retrieveMembersList = async memberIdArr => {
 };
 
 module.exports = {
+  getUserByUsernameIfAuthorized: getUserByUsernameIfAuthorized,
   createUser: createUser,
   loginUser: loginUser,
   getUserByUsername: getUserByUsername,

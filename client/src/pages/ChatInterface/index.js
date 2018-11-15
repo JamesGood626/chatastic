@@ -1,12 +1,17 @@
 import React from "react";
+import styled from "styled-components";
 import Navbar from "./containers/navbar";
+
+const Container = styled.div`
+  display: flex;
+`;
 
 const chatInterface = () => {
   return (
-    <div>
+    <Container>
       <Navbar />
       <h1>Chat Interface</h1>
-    </div>
+    </Container>
   );
 };
 

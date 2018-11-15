@@ -4,17 +4,22 @@ const { gql } = require("apollo-server-express");
 
 const queryTypeDef = gql`
   type Query {
-    allUsers: [User]
+    getUserByUsername(input: UserSearchInput!): UserSearchResult
     getGroup(input: GetGroupInput): Group
   }
 
   type Mutation {
+    acceptGroupInvitation(input: AcceptGroupInvitationInput): AcceptedStatus
+    declineGroupInvitation(input: DeclineGroupInvitationInput): DeclinedStatus
     createUser(input: CreateUserInput!): Authenticated
     loginUser(input: LoginUserInput!): Authenticated
     createGroup(input: CreateGroupInput!): Group
+    createGroupInvitation(input: CreateGroupInvitationInput!): GroupInvitation
     createDirectChat(input: CreateDirectChatInput!): Chat
     createGroupChat(input: CreateGroupChatInput!): Chat
-    createMessageInExistingChat(input: MessageInExistingChatInput!) Message
+    createMessageInExistingChat(
+      input: createMessageInExistingChatInput!
+    ): Message
   }
 
   type Subscription {

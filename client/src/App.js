@@ -8,6 +8,8 @@ import { HttpLink } from "apollo-link-http";
 import { withClientState } from "apollo-link-state";
 import { ApolloProvider } from "react-apollo";
 import { getMainDefinition } from "apollo-utilities";
+import gql from "graphql-tag";
+// import getAuthenticatedUser from './graphQL/queries/local/accounts'
 import Main from "./Main";
 import "./reset.css";
 
@@ -39,7 +41,24 @@ const link = split(
   httpLink
 );
 
-const defaultState = {};
+// defaultState for user:
+// uuid
+// firstname
+// lastname
+// token
+// username
+
+const defaultState = {
+  authenticatedUser: {
+    __typename: "authenticatedUser",
+    firstname: null,
+    lastname: null,
+    username: null,
+    uuid: null,
+    token: null,
+    chats: null
+  }
+};
 
 const cache = new InMemoryCache();
 
@@ -47,7 +66,43 @@ const stateLink = withClientState({
   cache,
   defaults: defaultState,
   resolvers: {
-    Mutation: {}
+    Mutation: {
+      updateAuthenticatedUser: (_, { input }, { cache }) => {
+        const { firstname, lastname, username, uuid, token, chats } = input;
+        console.log("DA input: ", input);
+        const query = gql`
+          query getAuthenticatedUser {
+            authenticatedUser @client {
+              __typename
+              firstname
+              lastname
+              username
+              uuid
+              token
+              chats {
+                channel
+              }
+            }
+          }
+        `;
+        const previousState = cache.readQuery({ query });
+        console.log("PREVIOUS STATE: ", previousState);
+        const data = {
+          ...previousState,
+          authenticatedUser: {
+            ...previousState.authenticatedUser,
+            firstname,
+            lastname,
+            username,
+            uuid,
+            token,
+            chats
+          }
+        };
+        console.log("NEW DATA: ", data);
+        cache.writeData({ query, data });
+      }
+    }
   }
 });
 

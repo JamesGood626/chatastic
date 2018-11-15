@@ -8,15 +8,15 @@ const MessageTypeDef = gql`
     sender: User!
   }
 
-  input MessageInNewChatInput {
+  input createMessageInput {
     text: String!
     sentDate: Date!
   }
 
-  input MessageInExistingChatInput {
-    channel: String!
+  input createMessageInExistingChatInput {
     text: String!
     sentDate: Date!
+    chatChannel: String!
   }
 `;
 
