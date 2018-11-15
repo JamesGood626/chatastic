@@ -17,15 +17,27 @@ const UserTypeDef = gql`
     username: String!
     password: String!
     groups: [Group]
-    chats: [Chat]
   }
 
   type Authenticated {
+    uuid: String!
     firstname: String!
     lastname: String!
     username: String!
-    uuid: String!
     token: String!
+    groups: [Group]
+  }
+
+  type UserSearchResult {
+    uuid: String
+    firstname: String
+    lastname: String
+    username: String
+    message: String
+  }
+
+  input UserSearchInput {
+    username: String!
   }
 
   input CreateUserInput {

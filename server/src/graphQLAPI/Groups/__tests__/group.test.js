@@ -31,7 +31,7 @@ const groupTwo = {
   title: "Group Two"
 };
 
-describe("With Group resources a user may issue a GraphQL request to", () => {
+describe("With the Group resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 
@@ -62,9 +62,11 @@ describe("With Group resources a user may issue a GraphQL request to", () => {
       token,
       groupOne
     );
-    const { channel, title, creator } = response.body.data.createGroup;
+    const { title, creator } = response.body.data.createGroup;
     expect(title).toBe("Group One");
     expect(creator.username).toBe("joesal");
+    expect(creator.groups.length).toBe(1);
+    expect(creator.groups[0].title).toBe("Group One");
     done();
   });
 

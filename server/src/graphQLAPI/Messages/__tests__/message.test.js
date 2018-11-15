@@ -1,36 +1,72 @@
 const request = require("supertest");
-const { httpServer, apolloServer, app } = require("../../../app");
+const { httpServer } = require("../../../app");
 const {
   graphQLQueryRequest,
   graphQLMutationRequest,
-  postRequest
+  postRequest,
+  postRequestWithHeaders,
+  dropUserCollection,
+  dropChatCollection,
+  dropGroupCollection,
+  dropMessageCollection,
+  createUserGraphQLRequest,
+  loginUserGraphQLRequest,
+  createGroupGraphQLRequest,
+  createDirectChatGraphQLRequest,
+  getGroupGraphQLRequest
 } = require("../../testHelpers");
-const { resetMessages } = require("../services");
 
-const messageOne = {
-  id: 1,
-  channelId: 1,
-  text: "This is a message."
+const userOne = {
+  firstname: "Sarah",
+  lastname: "Salmon",
+  username: "sarsal",
+  password: "sardines"
 };
 
-const createMessageMutation = `mutation createMessageOp($input: MessageInput!) {
-  createMessage(input: $input) {
-    id
-    channelId
-    text
+const userTwo = {
+  firstname: "Phil",
+  lastname: "Knight",
+  username: "pk",
+  password: "pk"
+};
+
+const directChat = {
+  messageInput: {
+    text: "The start of something amazing.",
+    sentDate: Date.now()
   }
-}`;
+};
+
+const messageOne = {
+  text: "This is a message.",
+  sentDate: Date.now()
+};
+
+const createMessageMutation = `mutation createMessageInExistingChatOp($input: createMessageInExistingChatInput!) {
+                                createMessageInExistingChat(input: $input) {
+                                  channel
+                                  text
+                                  sender {
+                                    firstname
+                                  }
+                                }
+                              }`;
 
 const createMessageGraphQLRequest = async (
   createdRequest,
+  token,
   message = messageOne
 ) => {
   const operationInfo = await graphQLMutationRequest(
     message,
     createMessageMutation,
-    "createMessageOp"
+    "createMessageInExistingChatOp"
   );
-  const response = await postRequest(createdRequest, operationInfo);
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
   return response;
 };
 
@@ -44,21 +80,48 @@ describe("With Message resources a user may", () => {
     done();
   });
 
-  // beforeEach(() => {
-  //   resetMessages();
-  // });
+  beforeEach(async done => {
+    await dropMessageCollection();
+    await dropChatCollection();
+    await dropUserCollection();
+    done();
+  });
 
   afterAll(async done => {
     await server.close(done);
   });
 
-  test("message is one", () => {
-    expect(1 + 1).toBe(2);
+  test("create a message", async done => {
+    const createUserOneResponse = await createUserGraphQLRequest(
+      createdRequest,
+      userOne
+    );
+    const createUserTwoResponse = await createUserGraphQLRequest(
+      createdRequest,
+      userTwo
+    );
+    const { uuid } = createUserOneResponse.body.data.createUser;
+    const {
+      token,
+      uuid: senderUuid
+    } = createUserTwoResponse.body.data.createUser;
+    directChat.recipientUuid = uuid;
+    const createDirectChatResponse = await createDirectChatGraphQLRequest(
+      createdRequest,
+      token,
+      directChat
+    );
+    const {
+      channel,
+      messages
+    } = createDirectChatResponse.body.data.createDirectChat;
+    // Need to add chatChannel before sending request
+    messageOne.chatChannel = channel;
+    const response = await createMessageGraphQLRequest(createdRequest, token);
+    console.log("THE RESPONSE BODY: ", response.body);
+    // expect(response.body.data.createMessageInExistingChat.text).toBe(
+    //   "This is a message."
+    // );
+    done();
   });
-
-  // test("create a message", async done => {
-  //   const response = await createMessageGraphQLRequest(createdRequest);
-  //   expect(response.body.data.createMessage.text).toBe("This is a message.");
-  //   done();
-  // });
 });

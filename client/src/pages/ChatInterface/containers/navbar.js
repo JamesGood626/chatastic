@@ -1,10 +1,40 @@
 import React, { Component } from "react";
+import styled from "styled-components";
 import { Link } from "@reach/router";
-import { Query, Mutation, Subscription } from "react-apollo";
+// import { client } from "../../../App";
+import { Query, Mutation, graphql, compose } from "react-apollo";
 import { gql } from "apollo-boost";
 import { ALL_USERS } from "../../../graphQL/queries/remote/accounts";
+import { getAuthenticatedUser } from "../../../graphQL/queries/local/accounts";
 
+import AdditionalOptions from "./additionalOptions";
 import MessageList from "./messageList";
+
+const NavAside = styled.aside`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4rem;
+  width: 18rem;
+  height: 100vh;
+  background: lime;
+`;
+
+const ChatNavOptions = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
+const ChatNavBlock = styled.div`
+  width: 100%;
+  height: 100%;
+  background: blue;
+`;
+
+const ChatNavBlockList = styled.ul`
+  background: #d40;
+`;
 
 const userInput = gql`
   input UserInput {
@@ -79,21 +109,53 @@ const MakeAUser = () => {
   );
 };
 
-export default class Navbar extends Component {
+class Navbar extends Component {
+  componentDidMount = () => {
+    console.log("PROPS FOR NAVBAR: ", this.props);
+    // const authenticatedUser = client.readQuery(getAuthenticatedUser);
+    // console.log(authenticatedUser);
+  };
+
   render() {
     return (
-      <aside>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/account">Account</Link>
-          </li>
-        </ul>
-        <Users />
-        <MakeAUser />
-      </aside>
+      <NavAside>
+        <AdditionalOptions />
+        <ChatNavOptions>
+          <ChatNavBlock>
+            <h3>Groups</h3>
+            <ChatNavBlockList>
+              <li>groups item one</li>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Group Chats</h3>
+            <ChatNavBlockList>
+              <li>group chats item one</li>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Group Members</h3>
+            <ChatNavBlockList>
+              <li>group members item one</li>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+        </ChatNavOptions>
+      </NavAside>
     );
   }
 }
+
+{
+  /* <Users />
+<MakeAUser /> */
+}
+
+// export default Navbar;
+
+export default compose(
+  graphql(getAuthenticatedUser, {
+    props: ({ data: { authenticatedUser } }) => ({
+      authenticatedUser
+    })
+  })
+)(Navbar);

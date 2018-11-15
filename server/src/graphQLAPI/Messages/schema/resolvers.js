@@ -5,8 +5,16 @@ const { getUserById } = require("../../Accounts/services");
 const resolvers = {
   Query: {},
   Mutation: {
-    createMessageInExistingChat: async (_parentValue, { input }, _context) => {
-      const createdMessage = await createMessageIfAuthorized(input);
+    createMessageInExistingChat: async (
+      _parentValue,
+      { input },
+      { headers: { authorization } }
+    ) => {
+      const createdMessage = await createMessageIfAuthorized(
+        input,
+        authorization
+      );
+      console.log("THE CREATED MESSAGE BACK IN RESOLVER: ", createdMessage);
       // pubsub.publish("MessageCreated", {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId

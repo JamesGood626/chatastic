@@ -1,11 +1,19 @@
 const { pubsub, withFilter } = require("../../pubsub");
-const { createUser, loginUser } = require("../services");
-const { retrieveChatsList } = require("../../Chats/services");
+const {
+  getUserByUsernameIfAuthorized,
+  createUser,
+  loginUser
+} = require("../services");
+const { retrieveGroupsList } = require("../../Groups/services");
 
 const resolvers = {
   Query: {
-    allUsers: async (_parentValue, _args, _context) => {
-      return [];
+    getUserByUsername: async (
+      _parentValue,
+      { input: { username } },
+      { headers: { authorization } }
+    ) => {
+      return await getUserByUsernameIfAuthorized(username, authorization);
     }
   },
   Mutation: {
@@ -28,11 +36,8 @@ const resolvers = {
     }
   },
   User: {
-    groups: async (parentValue, _args, _context) => {
-      return [];
-    },
-    chats: async ({ chats }, _args, _context) => {
-      return await retrieveChatsList(chats);
+    groups: async ({ groups }, _args, _context) => {
+      return await retrieveGroupsList(groups);
     }
   }
 };

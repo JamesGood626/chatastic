@@ -15,6 +15,7 @@ const resolvers = {
       { headers: { authorization } }
     ) => {
       const createdGroup = await createGroupIfAuthorized(input, authorization);
+      console.log("THE CREATED GROUP BEING RETURNED: ", createdGroup);
       return createdGroup;
     }
     // deleteGroup

@@ -9,6 +9,7 @@ const queryTypeDef = require("../GraphQLAPI");
 const { dateScalarSchema } = require("../graphQLAPI/customScalars/dateScalar");
 const userTypeDefs = require("../graphQLAPI/Accounts/schema/userType");
 const groupTypeDefs = require("../graphQLAPI/Groups/schema/groupType");
+const groupInvitationTypeDefs = require("../graphQLAPI/GroupInvitations/schema/groupInvitationType");
 const chatTypeDefs = require("../graphQLAPI/Chats/schema/chatType");
 const messageTypeDefs = require("../graphQLAPI/Messages/schema/messageType");
 
@@ -18,6 +19,7 @@ const {
 } = require("../graphQLAPI/customScalars/dateScalar");
 const userResolvers = require("../graphQLAPI/Accounts/schema/resolvers");
 const groupResolvers = require("../graphQLAPI/Groups/schema/resolvers");
+const groupInvitationResolvers = require("../graphQLAPI/GroupInvitations/schema/resolvers");
 const chatResolvers = require("../graphQLAPI/Chats/schema/resolvers");
 const messageResolvers = require("../graphQLAPI/Messages/schema/resolvers");
 
@@ -25,6 +27,7 @@ const typeDefs = [
   queryTypeDef,
   userTypeDefs,
   groupTypeDefs,
+  groupInvitationTypeDefs,
   chatTypeDefs,
   messageTypeDefs,
   dateScalarSchema
@@ -32,6 +35,7 @@ const typeDefs = [
 const resolvers = [
   userResolvers,
   groupResolvers,
+  groupInvitationResolvers,
   chatResolvers,
   messageResolvers,
   dateScalarResolver

@@ -6,6 +6,12 @@ const { createMessage } = require("../../messages/services");
 const { getUserById, getUserByUuid } = require("../../Accounts/services");
 const { getGroupByUuid } = require("../../Groups/services");
 
+const getChatByChannel = async channel => {
+  const chat = await Chat.findOne({ channel });
+  console.log("THE FOUND CHAT: ", chat);
+  return chat;
+};
+
 const createDirectChat = (input, messageId) => {
   return new Promise(async (resolve, reject) => {
     input.messages = [messageId];
@@ -130,5 +136,6 @@ module.exports = {
   createDirectChat: createDirectChat,
   createDirectChatIfAuthorized: createDirectChatIfAuthorized,
   createGroupChatIfAuthorized: createGroupChatIfAuthorized,
+  getChatByChannel: getChatByChannel,
   retrieveChatsList: retrieveChatsList
 };

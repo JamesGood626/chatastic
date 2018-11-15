@@ -50,6 +50,8 @@ const postRequestWithHeaders = async (createdRequest, operationInfo, token) => {
   return response;
 };
 
+// TO GET RID OF ALL THIS SIMILAR LOGIC.... JUST PASS IN THE MODEL AND A STRING AND OPERATE
+// OFF OF THAT
 const dropUserCollection = async () => {
   await User.remove({}, err => {
     if (err !== null) {
@@ -62,6 +64,14 @@ const dropGroupCollection = async () => {
   await Group.remove({}, err => {
     if (err !== null) {
       console.log("Group Collection Drop Error: ", err);
+    }
+  });
+};
+
+const dropGroupInvitationCollection = async () => {
+  await Group.remove({}, err => {
+    if (err !== null) {
+      console.log("Group Invitation Collection Drop Error: ", err);
     }
   });
 };
@@ -127,7 +137,11 @@ const createGroupMutation = `mutation createGroupOp($input: CreateGroupInput!) {
     uuid
     title
     creator {
+      uuid
       username
+      groups {
+        title
+      }
     }
   }
 }`;
@@ -170,6 +184,41 @@ const getGroupGraphQLRequest = async (createdRequest, input) => {
   return response;
 };
 
+// REMOVE NESTED CHATS FROM USERS AND IMPLEMENT THE CONCATENATED UUID SCHEME INSTEAD
+const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDirectChatInput!) {
+  createDirectChat(input: $input) {
+    channel
+    messages {
+      text
+      sentDate
+      sender {
+        uuid
+        firstname
+        lastname
+        chats {
+          id
+          channel
+        }
+      }
+    }
+  }
+}`;
+
+const createDirectChatGraphQLRequest = async (createdRequest, token, chat) => {
+  const operationInfo = await graphQLMutationRequest(
+    chat,
+    createDirectChatMutation,
+    "createDirectChatOp"
+  );
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+
+  return response;
+};
+
 module.exports = {
   graphQLQueryRequest: graphQLQueryRequest,
   graphQLQueryWithVariablesRequest: graphQLQueryWithVariablesRequest,
@@ -178,10 +227,12 @@ module.exports = {
   postRequestWithHeaders: postRequestWithHeaders,
   dropUserCollection: dropUserCollection,
   dropGroupCollection: dropGroupCollection,
+  dropGroupInvitationCollection: dropGroupInvitationCollection,
   dropChatCollection: dropChatCollection,
   dropMessageCollection: dropMessageCollection,
   createUserGraphQLRequest: createUserGraphQLRequest,
   loginUserGraphQLRequest: loginUserGraphQLRequest,
   createGroupGraphQLRequest: createGroupGraphQLRequest,
+  createDirectChatGraphQLRequest: createDirectChatGraphQLRequest,
   getGroupGraphQLRequest: getGroupGraphQLRequest
 };
