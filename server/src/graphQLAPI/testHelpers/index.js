@@ -53,7 +53,7 @@ const postRequestWithHeaders = async (createdRequest, operationInfo, token) => {
 // TO GET RID OF ALL THIS SIMILAR LOGIC.... JUST PASS IN THE MODEL AND A STRING AND OPERATE
 // OFF OF THAT
 const dropUserCollection = async () => {
-  await User.remove({}, err => {
+  await User.deleteMany({}, err => {
     if (err !== null) {
       console.log("User Collection Drop Error: ", err);
     }
@@ -61,7 +61,7 @@ const dropUserCollection = async () => {
 };
 
 const dropGroupCollection = async () => {
-  await Group.remove({}, err => {
+  await Group.deleteMany({}, err => {
     if (err !== null) {
       console.log("Group Collection Drop Error: ", err);
     }
@@ -69,7 +69,7 @@ const dropGroupCollection = async () => {
 };
 
 const dropGroupInvitationCollection = async () => {
-  await Group.remove({}, err => {
+  await Group.deleteMany({}, err => {
     if (err !== null) {
       console.log("Group Invitation Collection Drop Error: ", err);
     }
@@ -77,7 +77,7 @@ const dropGroupInvitationCollection = async () => {
 };
 
 const dropChatCollection = async () => {
-  await Chat.remove({}, err => {
+  await Chat.deleteMany({}, err => {
     if (err !== null) {
       console.log("Chat Collection Drop Error: ", err);
     }
@@ -195,10 +195,6 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
         uuid
         firstname
         lastname
-        chats {
-          id
-          channel
-        }
       }
     }
   }

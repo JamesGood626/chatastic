@@ -15,6 +15,7 @@ const createMessage = input => {
   });
 };
 
+// Refactor
 const createMessageIfAuthorized = async (input, authorization) => {
   let createdMessage;
   const { userId, errors } = await authorizeRequest(authorization);

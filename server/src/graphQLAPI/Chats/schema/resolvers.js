@@ -3,6 +3,7 @@ const {
   createDirectChatIfAuthorized,
   createGroupChatIfAuthorized
 } = require("../services");
+const { getUserById } = require("../../Accounts/services");
 const { retrieveMessageList } = require("../../Messages/services");
 
 const resolvers = {
@@ -40,10 +41,10 @@ const resolvers = {
     }
   },
   Chat: {
-    creator: async (parentValue, args, _context) => {
-      // Get ya User -> Only need to handle this when creating Group Chat.
+    creator: async ({ user }, _args, _context) => {
+      return await getUserById(user);
     },
-    messages: async ({ messages }, args, _context) => {
+    messages: async ({ messages }, _args, _context) => {
       return await retrieveMessageList(messages);
     }
   }

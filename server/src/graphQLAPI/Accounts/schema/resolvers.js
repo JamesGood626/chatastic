@@ -1,4 +1,5 @@
 const { pubsub, withFilter } = require("../../pubsub");
+const authorizeRequest = require("../../authorization");
 const {
   getUserByUsernameIfAuthorized,
   createUser,
@@ -13,7 +14,11 @@ const resolvers = {
       { input: { username } },
       { headers: { authorization } }
     ) => {
-      return await getUserByUsernameIfAuthorized(username, authorization);
+      return await getUserByUsernameIfAuthorized(
+        username,
+        authorization,
+        authorizeRequest
+      );
     }
   },
   Mutation: {
@@ -39,6 +44,13 @@ const resolvers = {
     groups: async ({ groups }, _args, _context) => {
       return await retrieveGroupsList(groups);
     }
+    // Nested Arrays That I still need to add to User resource
+    // groupActivies: async ({ groups }, _args, _context) => {
+    //   return await retrieveGroupsList(groups);
+    // },
+    // groupInvitations: async ({ groups }, _args, _context) => {
+    //   return await retrieveGroupsList(groups);
+    // },
   }
 };
 

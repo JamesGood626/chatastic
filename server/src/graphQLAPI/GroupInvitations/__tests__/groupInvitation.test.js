@@ -1,3 +1,4 @@
+process.env.TEST_SUITE = "groupInvitation-test";
 const request = require("supertest");
 const { httpServer } = require("../../../app");
 const {
@@ -111,7 +112,7 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
   let server;
 
   beforeAll(async done => {
-    server = await httpServer.listen(1000);
+    server = await httpServer.listen(3002);
     createdRequest = await request.agent(server);
     await createUserGraphQLRequest(createdRequest, userOne);
     await createUserGraphQLRequest(createdRequest, userTwo);
@@ -129,6 +130,10 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
     await server.close(done);
   });
 
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
+
   // test("get all users", async done => {
   //   await createUserGraphQLRequest(createdRequest);
   //   await createUserGraphQLRequest(createdRequest, userTwo);
@@ -137,6 +142,8 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
   //   done();
   // });
 
+  // !!!**!!! Still need to add the logic that adds the group invitation model reference
+  // to the invitee's nested groupInvitation array reference.
   test("create a group invitation sent from userTwo to userOne and have userOne accept invitation", async done => {
     // login userTwo
     const loginUserResponse = await loginUserGraphQLRequest(

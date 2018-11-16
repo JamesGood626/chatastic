@@ -1,7 +1,6 @@
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
-const authorizeRequest = require("../../authorization");
 const hashPasswordAndSaveUser = require("./bcryptUtils");
 const { JWT_SECRET } = require("../../../config");
 
@@ -33,8 +32,9 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
 };
 
 const getUserByUsername = async username => {
+  console.log("ABOUT GET FIND USER BY USERNAME: ", username);
   const user = await User.findOne({ username });
-  //console.log("FOUND USER: ", user);
+  console.log("FOUND USER: ", user);
   return user;
 };
 
@@ -50,8 +50,15 @@ const getUserById = async id => {
   return user;
 };
 
-const getUserByUsernameIfAuthorized = async (username, authorization) => {
-  console.log("THE AUTHORIZATION FOR USERNAME SEARCH: ", authorization);
+// Switched over to passing in the authorizeRequest function in to this function
+// to mitigate issues related to circular imports since, authorizeRequest utilizes
+// getUserByUsername from this file. Will more than likely switch over other resolvers
+// to do the same.
+const getUserByUsernameIfAuthorized = async (
+  username,
+  authorization,
+  authorizeRequest
+) => {
   let retrievedUser;
   const { userId, errors } = await authorizeRequest(authorization);
   if (userId) {

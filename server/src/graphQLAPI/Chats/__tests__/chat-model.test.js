@@ -1,19 +1,10 @@
+process.env.TEST_SUITE = "chat-model-test";
 const mongoose = require("mongoose");
 const { createDirectChat, createGroupChat } = require("../services");
 const { createMessage } = require("../../Messages/services");
 const initMongoMongooseConnection = require("../../../middleware/mongo");
 const { createUser, getUserByUsername } = require("../../Accounts/services");
-const { dropUserCollection } = require("../../testHelpers");
-
-// input CreateDirectChatInput {
-//   channel: String!
-//   message: String!
-// }
-
-// input CreateGroupChatInput {
-//   channel: String!
-//   title: String!
-// }
+const { dropUserCollection, dropChatCollection } = require("../../testHelpers");
 
 const userInput = {
   firstname: "Sam",
@@ -45,6 +36,7 @@ describe("Chats can be", () => {
 
   afterEach(async done => {
     await dropUserCollection();
+    await dropChatCollection();
     done();
   });
 
@@ -52,6 +44,12 @@ describe("Chats can be", () => {
     await mongoose.disconnect();
     done();
   });
+
+  test("1+1 = 2", () => {
+    expect(1 + 1).toBe(2);
+  });
+
+  // Group chat test
 
   test("created as a direct chat", async done => {
     // sender(User) and message creation
@@ -61,6 +59,7 @@ describe("Chats can be", () => {
     const { _id } = await createMessage(messageInput);
     // Create direct chat
     const createdChat = await createDirectChat(directChatInput, _id);
+    console.log("THE CREATED CHAT: ", createdChat);
     expect(createdChat.channel).toBe("9001");
     expect(createdChat.messages.length).toBe(1);
     done();

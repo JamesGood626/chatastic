@@ -1,3 +1,4 @@
+process.env.TEST_SUITE = "user-test";
 const request = require("supertest");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../../../config");
@@ -80,7 +81,7 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   let server;
 
   beforeAll(async done => {
-    server = await httpServer.listen(1000);
+    server = await httpServer.listen(2000);
     createdRequest = await request.agent(server);
     done();
   });
@@ -93,14 +94,6 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   afterAll(async done => {
     await server.close(done);
   });
-
-  // test("get all users", async done => {
-  //   await createUserGraphQLRequest(createdRequest);
-  //   await createUserGraphQLRequest(createdRequest, userTwo);
-  //   const response = await allUsersGraphQLRequest(createdRequest);
-  //   expect(response.body.data.allUsers.length).toBe(2);
-  //   done();
-  // });
 
   test("create a user", async done => {
     const response = await createUserGraphQLRequest(createdRequest, userOne);
@@ -153,8 +146,8 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
       token,
       userSearchInput
     );
-    // Pick up from here.
-    console.log("THE USER SEARCH RESPONSE BODY: ", userSearchResponse.body);
+    const { username } = userSearchResponse.body.data.getUserByUsername;
+    expect(username).toBe(userSearchInput.username);
     done();
   });
 });

@@ -1,3 +1,4 @@
+process.env.TEST_SUITE = "model-test";
 const request = require("supertest");
 const { httpServer } = require("../../../app");
 const {
@@ -74,8 +75,12 @@ describe("With Message resources a user may", () => {
   let createdRequest;
   let server;
 
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
+
   beforeAll(async done => {
-    server = await httpServer.listen(5000);
+    server = await httpServer.listen(3004);
     createdRequest = await request.agent(server);
     done();
   });
@@ -105,6 +110,8 @@ describe("With Message resources a user may", () => {
       token,
       uuid: senderUuid
     } = createUserTwoResponse.body.data.createUser;
+    // Phil sending Sarah a message
+    directChat.senderUuid = senderUuid;
     directChat.recipientUuid = uuid;
     const createDirectChatResponse = await createDirectChatGraphQLRequest(
       createdRequest,
@@ -117,11 +124,13 @@ describe("With Message resources a user may", () => {
     } = createDirectChatResponse.body.data.createDirectChat;
     // Need to add chatChannel before sending request
     messageOne.chatChannel = channel;
+    // !!**!! Still needed to test that a message
     const response = await createMessageGraphQLRequest(createdRequest, token);
-    console.log("THE RESPONSE BODY: ", response.body);
-    // expect(response.body.data.createMessageInExistingChat.text).toBe(
-    //   "This is a message."
-    // );
+    expect(response.body.data.createMessageInExistingChat.text).toBe(
+      "This is a message."
+    );
+    // !!**!! Once user's have nested Group Activities on them, refetch both of the users and verify
+    // that the new message was added to their direct chat's message array
     done();
   });
 });

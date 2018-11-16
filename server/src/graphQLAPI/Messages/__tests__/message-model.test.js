@@ -1,3 +1,4 @@
+process.env.TEST_SUITE = "message-model-test";
 const mongoose = require("mongoose");
 const { createMessage } = require("../services");
 const { createUser, getUserByUsername } = require("../../Accounts/services");
@@ -18,6 +19,10 @@ const messageOne = {
 };
 
 describe("Messages can be", () => {
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
+
   beforeAll(async done => {
     await initMongoMongooseConnection();
     done();

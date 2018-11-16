@@ -5,6 +5,7 @@ const {
   TOKEN_EXPIRED_MESSAGE,
   TOKEN_DECODING_MESSAGE
 } = require("./errorMessages");
+// const User = require("./Accounts/model/user");
 
 const decodeToken = token => {
   const splitToken = token.split(" ")[1];
@@ -21,6 +22,7 @@ const verifyAuthorization = async authorization => {
   const { username, iat, exp } = decodeToken(authorization);
   if (username && iat < exp) {
     try {
+      console.log("THE USER NAME BEING PASSED IN: ", username);
       user = await getUserByUsername(username);
       return user;
     } catch (e) {

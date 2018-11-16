@@ -24,6 +24,7 @@ const resolvers = {
   },
   Message: {
     sender: async ({ sender }, _args, _context) => {
+      console.log("THE SENDER IN MESSAGE SENDER RESOLVER: ", sender);
       return await getUserById(sender);
     }
   }

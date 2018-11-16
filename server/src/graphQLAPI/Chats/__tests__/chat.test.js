@@ -1,3 +1,4 @@
+process.env.TEST_SUITE = "chat-test";
 const request = require("supertest");
 const { httpServer } = require("../../../app");
 const {
@@ -73,8 +74,12 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
+
   beforeAll(async done => {
-    server = await httpServer.listen(2020);
+    server = await httpServer.listen(3001);
     createdRequest = await request.agent(server);
     done();
   });
@@ -106,6 +111,7 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
       token,
       uuid: senderUuid
     } = createUserTwoResponse.body.data.createUser;
+    directChat.senderUuid = senderUuid;
     directChat.recipientUuid = uuid;
     const response = await createDirectChatGraphQLRequest(
       createdRequest,
@@ -122,8 +128,8 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     expect(sender.uuid).toBe(senderUuid);
     expect(sender.firstname).toBe("Tom");
     expect(sender.lastname).toBe("Scoggin");
-    // Now check the recipient user's chats length
-    const recipientUser = await getUserByUuid(uuid);
+    // !!!*!!!! For direct chats you'll now need to test adding
+    // them to a user's associated group activity nested chat array
     done();
   });
 
