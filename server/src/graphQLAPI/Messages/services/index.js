@@ -20,19 +20,13 @@ const createMessageIfAuthorized = async (input, authorization) => {
   let createdMessage;
   const { userId, errors } = await authorizeRequest(authorization);
   if (userId) {
-    console.log("Got input: ", input);
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
-    console.log("GOT THE CHAT BACK IN AUTHORIZED CHECK: ", chat);
-    console.log("THE USER ID: ", userId);
-    console.log("THE messageInput: ", messageInput);
     messageInput.sender = userId;
     messageInput.channel = chatChannel;
     createdMessage = await createMessage(messageInput);
-    console.log("THE CREATED MESSAGE: ", createdMessage);
     chat.messages = [...chat.messages, createdMessage];
     await chat.save();
-    console.log("THE SAVED CHAT: ", chat);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);

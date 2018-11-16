@@ -19,11 +19,13 @@ const createGroupInvitation = (input, userId) => {
     groupInvitationInput.invitee = invitee._id;
     groupInvitationInput.group = group._id;
     groupInvitationInput.uuid = uuidv4();
-    console.log("THE INPUT BEFORE CREATION: ", groupInvitationInput);
     const groupInvitation = new GroupInvitation(groupInvitationInput);
+    invitee.groupInvitations = [groupInvitation, ...invitee.groupInvitations];
     try {
       await groupInvitation.save();
+      await invitee.save();
       console.log("THE SAVED GROUP INVITATION: ", groupInvitation);
+      console.log("THE SAVED INVITEE: ", invitee);
       resolve(groupInvitation);
     } catch (e) {
       console.log("Error saving chat: ", e);
@@ -89,12 +91,12 @@ const createGroupInvitationIfAuthorized = async (input, authorization) => {
   return createdChat;
 };
 
-const retrieveGroupInvitationList = async chatIdArr => {
-  if (chatIdArr.length > 1) {
-    return await Chat.find({ _id: { $in: chatIdArr } });
+const retrieveGroupInvitationList = async idArr => {
+  if (idArr.length > 1) {
+    return await GroupInvitation.find({ _id: { $in: idArr } });
   } else {
-    const chat = await Chat.findById(chatIdArr[0]);
-    return [chat];
+    const groupInvitation = await GroupInvitation.findById(idArr[0]);
+    return [groupInvitation];
   }
 };
 

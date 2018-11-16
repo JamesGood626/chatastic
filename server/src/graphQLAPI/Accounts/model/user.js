@@ -29,10 +29,16 @@ const userSchema = new mongoose.Schema({
       ref: "Group"
     }
   ],
-  chats: [
+  groupActivities: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Chat"
+      ref: "GroupActivity"
+    }
+  ],
+  groupInvitations: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "GroupInvitation"
     }
   ]
 });

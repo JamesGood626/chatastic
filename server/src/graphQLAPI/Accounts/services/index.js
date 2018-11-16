@@ -32,21 +32,17 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
 };
 
 const getUserByUsername = async username => {
-  console.log("ABOUT GET FIND USER BY USERNAME: ", username);
   const user = await User.findOne({ username });
-  console.log("FOUND USER: ", user);
   return user;
 };
 
 const getUserByUuid = async uuid => {
   const user = await User.findOne({ uuid });
-  //console.log("FOUND USER BY UUID: ", user);
   return user;
 };
 
 const getUserById = async id => {
   const user = await User.findById(id);
-  //console.log("FOUND USER BY ID: ", user);
   return user;
 };
 

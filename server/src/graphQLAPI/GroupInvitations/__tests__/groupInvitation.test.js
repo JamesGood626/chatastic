@@ -40,8 +40,7 @@ const secondUserLoginInput = {
 };
 
 const group = {
-  title: "The Group You Need",
-  creationDate: Date.now()
+  title: "The Group You Need"
 };
 
 const groupInvitation = {

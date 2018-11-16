@@ -10,6 +10,7 @@ const { dateScalarSchema } = require("../graphQLAPI/customScalars/dateScalar");
 const userTypeDefs = require("../graphQLAPI/Accounts/schema/userType");
 const groupTypeDefs = require("../graphQLAPI/Groups/schema/groupType");
 const groupInvitationTypeDefs = require("../graphQLAPI/GroupInvitations/schema/groupInvitationType");
+const groupActivityTypeDefs = require("../graphQLAPI/GroupActivities/schema/groupActivityType");
 const chatTypeDefs = require("../graphQLAPI/Chats/schema/chatType");
 const messageTypeDefs = require("../graphQLAPI/Messages/schema/messageType");
 
@@ -28,6 +29,7 @@ const typeDefs = [
   userTypeDefs,
   groupTypeDefs,
   groupInvitationTypeDefs,
+  groupActivityTypeDefs,
   chatTypeDefs,
   messageTypeDefs,
   dateScalarSchema

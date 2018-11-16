@@ -132,15 +132,12 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("get a user by username", async done => {
-    const createUserResponse = await createUserGraphQLRequest(
-      createdRequest,
-      userOne
-    );
-    const secondCreateUserResponse = await createUserGraphQLRequest(
+    await createUserGraphQLRequest(createdRequest, userOne);
+    const createUserResonse = await createUserGraphQLRequest(
       createdRequest,
       userTwo
     );
-    const { token } = secondCreateUserResponse.body.data.createUser;
+    const { token } = createUserResonse.body.data.createUser;
     const userSearchResponse = await getUserByUsernameGraphQLRequest(
       createdRequest,
       token,

@@ -9,6 +9,10 @@ const groupSchema = new Schema({
   title: {
     type: String
   },
+  createdAt: {
+    type: Date,
+    default: Date.now()
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User"

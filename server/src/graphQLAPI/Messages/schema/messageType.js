@@ -1,5 +1,6 @@
 const { gql } = require("apollo-server-express");
 
+// Don't think you'll need channel here...
 const MessageTypeDef = gql`
   type Message {
     channel: String!

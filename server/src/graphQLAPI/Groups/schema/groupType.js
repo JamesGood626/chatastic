@@ -6,7 +6,7 @@ const GroupTypeDef = gql`
     id: String!
     uuid: String!
     title: String!
-    creationDate: Date!
+    createdAt: Date!
     creator: User!
     chats: [Chat]
     members: [User!]!
@@ -14,7 +14,6 @@ const GroupTypeDef = gql`
 
   input CreateGroupInput {
     title: String!
-    creationDate: Date!
   }
 
   input GetGroupInput {

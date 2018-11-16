@@ -31,6 +31,10 @@ const userTwo = {
   password: "pk"
 };
 
+const groupOne = {
+  title: "Group One"
+};
+
 const directChat = {
   messageInput: {
     text: "The start of something amazing.",
@@ -110,7 +114,14 @@ describe("With Message resources a user may", () => {
       token,
       uuid: senderUuid
     } = createUserTwoResponse.body.data.createUser;
+    const createGroupResponse = await createGroupGraphQLRequest(
+      createdRequest,
+      token,
+      groupOne
+    );
+    const { uuid: groupUuid } = createGroupResponse.body.data.createGroup;
     // Phil sending Sarah a message
+    directChat.groupUuid = groupUuid;
     directChat.senderUuid = senderUuid;
     directChat.recipientUuid = uuid;
     const createDirectChatResponse = await createDirectChatGraphQLRequest(
@@ -129,6 +140,10 @@ describe("With Message resources a user may", () => {
     expect(response.body.data.createMessageInExistingChat.text).toBe(
       "This is a message."
     );
+    // To better cover this scenario
+    // I could grab the users by username and check that
+    // their groupActivities and check that their shared chat has had a message
+    // added to it.
     // !!**!! Once user's have nested Group Activities on them, refetch both of the users and verify
     // that the new message was added to their direct chat's message array
     done();

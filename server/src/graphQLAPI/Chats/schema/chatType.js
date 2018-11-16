@@ -8,11 +8,13 @@ const ChatTypeDef = gql`
     id: String!
     channel: String!
     title: String
+    createdAt: Date!
     creator: User
     messages: [Message]
   }
 
   input CreateDirectChatInput {
+    groupUuid: String!
     recipientUuid: String!
     senderUuid: String!
     messageInput: createMessageInput!

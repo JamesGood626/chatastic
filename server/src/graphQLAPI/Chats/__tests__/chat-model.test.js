@@ -59,7 +59,6 @@ describe("Chats can be", () => {
     const { _id } = await createMessage(messageInput);
     // Create direct chat
     const createdChat = await createDirectChat(directChatInput, _id);
-    console.log("THE CREATED CHAT: ", createdChat);
     expect(createdChat.channel).toBe("9001");
     expect(createdChat.messages.length).toBe(1);
     done();

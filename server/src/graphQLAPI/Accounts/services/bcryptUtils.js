@@ -1,7 +1,9 @@
 const bcrypt = require("bcrypt");
 const uuidv4 = require("uuid/v4");
 
-const hashPasswordAndSaveUser = (user, password, saltRounds = 10) => {
+const saltAmount = process.env.NODE_ENV === "test" ? 1 : 10;
+
+const hashPasswordAndSaveUser = (user, password, saltRounds = saltAmount) => {
   return new Promise((resolve, reject) => {
     bcrypt.genSalt(saltRounds, (err, salt) => {
       if (err) {

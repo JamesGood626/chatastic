@@ -108,6 +108,40 @@ const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
                               lastname
                               username
                               token
+                              groups {
+                                uuid
+                                title
+                              }
+                              groupActivities {
+                                groupUuid
+                                directChats {
+                                  channel
+                                  title
+                                  messages {
+                                    text
+                                    sentDate
+                                    sender {
+                                      username
+                                    }
+                                  }
+                                }
+                              }
+                              groupInvitations {
+                                group {
+                                  uuid
+                                  title
+                                }
+                                inviter {
+                                  firstname
+                                  lastname
+                                  username
+                                }
+                                invitee {
+                                  firstname
+                                  lastname
+                                  username
+                                }
+                              }
                             }
                           }`;
 

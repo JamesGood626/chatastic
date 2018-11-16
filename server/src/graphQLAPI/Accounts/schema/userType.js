@@ -17,6 +17,8 @@ const UserTypeDef = gql`
     username: String!
     password: String!
     groups: [Group]
+    groupActivities: [GroupActivity]
+    groupInvitations: [GroupInvitation]
   }
 
   type Authenticated {
@@ -26,6 +28,8 @@ const UserTypeDef = gql`
     username: String!
     token: String!
     groups: [Group]
+    groupActivities: [GroupActivity]
+    groupInvitations: [GroupInvitation]
   }
 
   type UserSearchResult {

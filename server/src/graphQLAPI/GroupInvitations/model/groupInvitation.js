@@ -7,8 +7,8 @@ const groupInvitationSchema = new Schema({
     required: true
   },
   sentDate: {
-    type: Date
-    // required: true
+    type: Date,
+    required: true
   },
   group: {
     type: Schema.Types.ObjectId,
