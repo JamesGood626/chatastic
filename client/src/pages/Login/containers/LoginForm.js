@@ -2,12 +2,10 @@ import React, { Component } from "react";
 import { Redirect } from "@reach/router";
 import styled from "styled-components";
 import { Mutation, graphql, compose } from "react-apollo";
-// import { updateMapPosition } from "../GraphQL/localMutations";
-import { CREATE_USER } from "../../../graphQL/mutations/remote/accounts";
+import { LOGIN_USER } from "../../../graphQL/mutations/remote/accounts";
 import { updateAuthenticatedUser } from "../../../graphQL/mutations/local/accounts";
 import InputField from "../../sharedComponents/inputField";
 
-console.log("GOT CREATE_USER: ", CREATE_USER);
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -43,13 +41,11 @@ const H3 = styled.h3`
 `;
 
 const initialState = {
-  firstname: "",
-  lastname: "",
   username: "",
   password: ""
 };
 
-class Signup extends Component {
+class Login extends Component {
   state = initialState;
 
   resetState = () => {
@@ -76,20 +72,20 @@ class Signup extends Component {
   render() {
     return (
       <Mutation
-        mutation={CREATE_USER}
-        update={(cache, { data: { createUser } }) => {
-          console.log("GOT THE createUser data in update: ", createUser);
+        mutation={LOGIN_USER}
+        update={(cache, { data: { loginUser } }) => {
+          console.log("GOT THE loginUser data in update: ", loginUser);
           this.props.updateAuthenticatedUser({
-            variables: { input: createUser }
+            variables: { input: loginUser }
           });
           // const { todos } = cache.readQuery({ query: GET_TODOS });
           // cache.writeQuery({
           //   query: GET_TODOS,
-          //   data: { todos: todos.concat([createUser]) }
+          //   data: { todos: todos.concat([loginUser]) }
           // });
         }}
       >
-        {(createUser, { data }) => {
+        {(loginUser, { data }) => {
           if (data) {
             return <Redirect to="/chat" />;
           }
@@ -98,21 +94,11 @@ class Signup extends Component {
               <Form
                 onSubmit={e => {
                   e.preventDefault();
-                  createUser({ variables: { input: this.state } });
+                  loginUser({ variables: { input: this.state } });
                   this.resetState();
                 }}
               >
-                <H3>Sign Up</H3>
-                <InputField
-                  inputId="firstname"
-                  labelText="First Name:"
-                  updateState={this.updateState}
-                />
-                <InputField
-                  inputId="lastname"
-                  labelText="Last Name:"
-                  updateState={this.updateState}
-                />
+                <H3>Login</H3>
                 <InputField
                   inputId="username"
                   labelText="User Name:"
@@ -138,4 +124,4 @@ class Signup extends Component {
 
 export default compose(
   graphql(updateAuthenticatedUser, { name: "updateAuthenticatedUser" })
-)(Signup);
+)(Login);

@@ -55,60 +55,6 @@ const CREATE_USER = gql`
   }
 `;
 
-// const HeresAUser = ({ channelId }) => (
-//   <Subscription
-//     subscription={USER_CREATED}
-//     variables={{ channelId }} // this will be the specific group id which I'll need to pass in
-//     // to utilize on the server??
-//   >
-//     {({ data: { userCreated }, loading }) => (
-//       <h4>New user: {!loading && userCreated.username}</h4>
-//     )}
-//   </Subscription>
-// );
-
-const Users = () => (
-  <Query query={ALL_USERS}>
-    {({ loading, error, data, subscribeToMore }) => {
-      if (loading) return "Loading...";
-      if (error) return `Error! ${error.message}`;
-
-      return (
-        <MessageList users={data.allUsers} subscribeToMore={subscribeToMore} />
-      );
-    }}
-  </Query>
-);
-
-const MakeAUser = () => {
-  return (
-    <Mutation mutation={CREATE_USER}>
-      {(CREATE_USER, { data }) => (
-        <button
-          onClick={e => {
-            e.preventDefault();
-            console.log("CREATING USER BUTTON ONCLICK");
-            CREATE_USER({
-              variables: {
-                userInput: {
-                  id: 3,
-                  firstname: "John",
-                  lastname: "Jingleheimer",
-                  username: "Schmidt",
-                  password: "password",
-                  channelId: 1
-                }
-              }
-            });
-          }}
-        >
-          Add User
-        </button>
-      )}
-    </Mutation>
-  );
-};
-
 class Navbar extends Component {
   componentDidMount = () => {
     console.log("PROPS FOR NAVBAR: ", this.props);
@@ -117,8 +63,10 @@ class Navbar extends Component {
   };
 
   render() {
+    const { firstname, lastname } = this.props.authenticatedUser;
     return (
       <NavAside>
+        <h3>Welcome, {`${firstname} ${lastname}`}</h3>
         <AdditionalOptions />
         <ChatNavOptions>
           <ChatNavBlock>
@@ -145,11 +93,6 @@ class Navbar extends Component {
   }
 }
 
-{
-  /* <Users />
-<MakeAUser /> */
-}
-
 // export default Navbar;
 
 export default compose(
@@ -159,3 +102,57 @@ export default compose(
     })
   })
 )(Navbar);
+
+// const HeresAUser = ({ channelId }) => (
+//   <Subscription
+//     subscription={USER_CREATED}
+//     variables={{ channelId }} // this will be the specific group id which I'll need to pass in
+//     // to utilize on the server??
+//   >
+//     {({ data: { userCreated }, loading }) => (
+//       <h4>New user: {!loading && userCreated.username}</h4>
+//     )}
+//   </Subscription>
+// );
+
+// const Users = () => (
+//   <Query query={ALL_USERS}>
+//     {({ loading, error, data, subscribeToMore }) => {
+//       if (loading) return "Loading...";
+//       if (error) return `Error! ${error.message}`;
+
+//       return (
+//         <MessageList users={data.allUsers} subscribeToMore={subscribeToMore} />
+//       );
+//     }}
+//   </Query>
+// );
+
+// const MakeAUser = () => {
+//   return (
+//     <Mutation mutation={CREATE_USER}>
+//       {(CREATE_USER, { data }) => (
+//         <button
+//           onClick={e => {
+//             e.preventDefault();
+//             console.log("CREATING USER BUTTON ONCLICK");
+//             CREATE_USER({
+//               variables: {
+//                 userInput: {
+//                   id: 3,
+//                   firstname: "John",
+//                   lastname: "Jingleheimer",
+//                   username: "Schmidt",
+//                   password: "password",
+//                   channelId: 1
+//                 }
+//               }
+//             });
+//           }}
+//         >
+//           Add User
+//         </button>
+//       )}
+//     </Mutation>
+//   );
+// };
