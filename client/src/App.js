@@ -6,12 +6,22 @@ import { split } from "apollo-link";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
 import { withClientState } from "apollo-link-state";
+import { setContext } from "apollo-link-context";
 import { ApolloProvider } from "react-apollo";
 import { getMainDefinition } from "apollo-utilities";
 import gql from "graphql-tag";
 // import getAuthenticatedUser from './graphQL/queries/local/accounts'
 import Main from "./Main";
 import "./reset.css";
+
+const authLink = setContext((request, previousContext) => {
+  console.log("THE REQUEST IN setContext: ", request);
+  const token = localStorage.getItem("token");
+  console.log("THE RETRIEVED TOKEN: ", token);
+  return {
+    headers: { authorization: `Bearer ${token}` }
+  };
+});
 
 const httpLink = new HttpLink({
   uri: "http://localhost:5000/graphql"
@@ -57,6 +67,11 @@ const defaultState = {
     uuid: null,
     token: null,
     chats: null
+  },
+  groups: {
+    __typename: "groups",
+    title: null,
+    members: []
   }
 };
 
@@ -101,6 +116,33 @@ const stateLink = withClientState({
         };
         console.log("NEW DATA: ", data);
         cache.writeData({ query, data });
+      },
+      updateGroups: (_, { input }, { cache }) => {
+        // const { firstname, lastname, username, uuid, token, chats } = input;
+        console.log("input for updateGroups: ", input);
+        const query = gql`
+          query getGroups {
+            groups @client {
+              __typename
+              title
+              members {
+                username
+              }
+            }
+          }
+        `;
+        const previousState = cache.readQuery({ query });
+        console.log("PREVIOUS STATE: ", previousState);
+        const data = {
+          ...previousState,
+          groups: {
+            ...previousState.groups,
+            // title,
+            members: [...previousState.groups.members]
+          }
+        };
+        console.log("NEW DATA: ", data);
+        cache.writeData({ query, data });
       }
     }
   }
@@ -108,7 +150,7 @@ const stateLink = withClientState({
 
 const client = new ApolloClient({
   cache,
-  link: ApolloLink.from([stateLink, link])
+  link: ApolloLink.from([authLink, stateLink, link])
 });
 
 class App extends Component {

@@ -24,6 +24,36 @@ const createGroupActivity = input => {
   });
 };
 
+const addGroupActivity = async (user, groupUuid) => {
+  const input = {
+    groupUuid,
+    uuid: uuidv4()
+  };
+  const createdGroupActivity = await createGroupActivity(input);
+  user.groupActivities = [createdGroupActivity._id, ...user.groupActivities];
+  console.log("USER RETURNED FROM addGroupActivity: ", user);
+  return user;
+};
+
+const updateGroupActivity = async (
+  user,
+  filteredGroupActivity,
+  createdChat
+) => {
+  // in this case filtered should have an object
+  console.log("FILTERED IN UPDATE: ", filteredGroupActivity);
+  filteredGroupActivity.directChats = [
+    createdChat,
+    ...filteredGroupActivity.directChats
+  ];
+  user.groupActivities = [filteredGroupActivity, ...user.groupActivities];
+  await user.save();
+  console.log(
+    "THE USER'S GROUP ACTIVITIES WHEN UPDATING: ",
+    user.groupActivities
+  );
+};
+
 const retrieveGroupActivitiesList = async IdArr => {
   if (IdArr.length > 1) {
     return await GroupActivity.find({ _id: { $in: IdArr } });
@@ -34,7 +64,8 @@ const retrieveGroupActivitiesList = async IdArr => {
 };
 
 module.exports = {
-  createGroupActivity: createGroupActivity,
+  addGroupActivity: addGroupActivity,
+  // createGroupActivity: createGroupActivity,
   getGroupActivityById: getGroupActivityById,
   retrieveGroupActivitiesList: retrieveGroupActivitiesList
 };

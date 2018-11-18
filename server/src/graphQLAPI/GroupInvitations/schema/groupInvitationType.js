@@ -15,6 +15,7 @@ const GroupInvitationTypeDef = gql`
 
   type AcceptedStatus {
     acceptedMessage: String!
+    joinedGroup: Group!
   }
 
   type DeclinedStatus {

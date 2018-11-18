@@ -38,13 +38,19 @@ export const LOGIN_USER = gql`
       groups {
         uuid
         title
-        members
+        chats {
+          channel
+          title
+        }
+        members {
+          uuid
+          username
+        }
       }
       groupActivities {
         groupUuid
         directChats {
           channel
-          title
           messages {
             text
             sentDate

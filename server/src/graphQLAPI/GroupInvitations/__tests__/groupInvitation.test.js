@@ -1,19 +1,19 @@
 process.env.TEST_SUITE = "groupInvitation-test";
 const request = require("supertest");
 const { httpServer } = require("../../../app");
+const { dropCollection } = require("../../testHelpers");
+const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
-  graphQLQueryRequest,
-  graphQLMutationRequest,
-  postRequest,
-  postRequestWithHeaders,
-  dropUserCollection,
-  dropGroupCollection,
-  dropGroupInvitationCollection,
-  createUserGraphQLRequest,
-  loginUserGraphQLRequest,
-  createGroupGraphQLRequest
-} = require("../../testHelpers");
+  createGroupInvitationGQLRequest
+} = require("../../testHelpers/groupInvitationsRequest");
+const {
+  loginAndCreateGroupSetup,
+  loginAndAcceptGroupInvitation
+} = require("../../testHelpers/groupInvitationsOperations");
 const { getUserByUsername } = require("../../Accounts/services");
+const Group = require("../../Groups/model/group");
+const GroupInvitation = require("../model/groupInvitation");
+const User = require("../../Accounts/model/user");
 
 const userOne = {
   firstname: "Sam",
@@ -29,7 +29,7 @@ const userTwo = {
   password: "supa-secret"
 };
 
-const userLoginInput = {
+const loginInput = {
   username: "BamBamSar",
   password: "supa-secret"
 };
@@ -39,71 +39,12 @@ const secondUserLoginInput = {
   password: "supa-secret"
 };
 
-const group = {
+const groupInput = {
   title: "The Group You Need"
 };
 
-const groupInvitation = {
+const groupInvitationInput = {
   sentDate: Date.now()
-};
-
-const createGroupInvitationMutation = `mutation createGroupInvitationOp($input: CreateGroupInvitationInput!) {
-  createGroupInvitation(input: $input) {
-    uuid
-    group {
-      title
-    }
-    inviter {
-      firstname
-    }
-    invitee {
-      firstname
-    }
-  }
-}`;
-
-const createGroupInvitationGraphQLRequest = async (
-  createdRequest,
-  token,
-  groupInvitation
-) => {
-  const operationInfo = await graphQLMutationRequest(
-    groupInvitation,
-    createGroupInvitationMutation,
-    "createGroupInvitationOp"
-  );
-  const response = await postRequestWithHeaders(
-    createdRequest,
-    operationInfo,
-    token
-  );
-
-  return response;
-};
-
-const acceptGroupInvitationMutation = `mutation acceptGroupInvitationOp($input: AcceptGroupInvitationInput!) {
-  acceptGroupInvitation(input: $input) {
-    acceptedMessage
-  }
-}`;
-
-const acceptGroupInvitationGraphQLRequest = async (
-  createdRequest,
-  token,
-  acceptGroupInvitationInput
-) => {
-  const operationInfo = await graphQLMutationRequest(
-    acceptGroupInvitationInput,
-    acceptGroupInvitationMutation,
-    "acceptGroupInvitationOp"
-  );
-  const response = await postRequestWithHeaders(
-    createdRequest,
-    operationInfo,
-    token
-  );
-
-  return response;
 };
 
 describe("With the GroupInvitation resource a user may issue a GraphQL request to", () => {
@@ -113,85 +54,65 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
   beforeAll(async done => {
     server = await httpServer.listen(3002);
     createdRequest = await request.agent(server);
-    await createUserGraphQLRequest(createdRequest, userOne);
-    await createUserGraphQLRequest(createdRequest, userTwo);
+    await createUserGQLRequest(createdRequest, userOne);
+    await createUserGQLRequest(createdRequest, userTwo);
     done();
   });
 
   afterEach(async done => {
-    await dropGroupCollection();
-    await dropGroupInvitationCollection();
+    await dropCollection(Group);
+    await dropCollection(GroupInvitation);
+    await dropCollection(User);
     done();
   });
 
   afterAll(async done => {
-    await dropUserCollection();
     await server.close(done);
   });
 
-  // test("1+1 = 2", () => {
-  //   expect(1 + 1).toBe(2);
-  // });
-
-  // test("get all users", async done => {
-  //   await createUserGraphQLRequest(createdRequest);
-  //   await createUserGraphQLRequest(createdRequest, userTwo);
-  //   const response = await allUsersGraphQLRequest(createdRequest);
-  //   expect(response.body.data.allUsers.length).toBe(2);
-  //   done();
-  // });
-
-  // !!!**!!! Still need to add the logic that adds the group invitation model reference
-  // to the invitee's nested groupInvitation array reference.
   test("create a group invitation sent from userTwo to userOne and have userOne accept invitation", async done => {
-    // login userTwo
-    const loginUserResponse = await loginUserGraphQLRequest(
+    const { token, groupUuid } = await loginAndCreateGroupSetup(
       createdRequest,
-      userLoginInput
+      loginInput,
+      groupInput
     );
-    const { token } = loginUserResponse.body.data.loginUser;
-    // userTwo must now create a group.
-    const createGroupResponse = await createGroupGraphQLRequest(
-      createdRequest,
-      token,
-      group
-    );
-    const groupUuid = createGroupResponse.body.data.createGroup.uuid;
-    // find userOne by username
-    const retrievedUserOne = await getUserByUsername("BamBamSam");
-    const userOneUuid = retrievedUserOne.uuid;
-    // createGroupInvitation
-    groupInvitation.groupUuid = groupUuid;
-    groupInvitation.inviteeUuid = userOneUuid;
-    const createGroupInvitationResponse = await createGroupInvitationGraphQLRequest(
+    // Find the invitee user
+    const { uuid: userOneUuid } = await getUserByUsername("BamBamSam");
+    groupInvitationInput.groupUuid = groupUuid;
+    groupInvitationInput.inviteeUuid = userOneUuid;
+    // uuid from this invitation creation used below in accept invitation input
+    const { group, inviter, invitee } = await createGroupInvitationGQLRequest(
       createdRequest,
       token,
-      groupInvitation
+      groupInvitationInput
     );
-    const {
-      uuid,
-      group: { title },
-      inviter,
-      invitee
-    } = createGroupInvitationResponse.body.data.createGroupInvitation;
-    expect(title).toBe("The Group You Need");
+    expect(group.title).toBe("The Group You Need");
     expect(inviter.firstname).toBe("Sarah");
     expect(invitee.firstname).toBe("Sam");
-    // login userOne and accept invitation
-    const loginSecondUserResponse = await loginUserGraphQLRequest(
+    // Ensure that both users have a groupInvitation
+    // in their nested groupInvitations array.
+    // Necessary to support UI indicators
+    expect(inviter.groupInvitations.length).toBe(1);
+    expect(invitee.groupInvitations.length).toBe(1);
+    // Now for the invitee user to accept the invitation
+    const {
+      acceptedMessage,
+      joinedGroup,
+      groupInvitation
+    } = await loginAndAcceptGroupInvitation(
       createdRequest,
       secondUserLoginInput
     );
-    const secondToken = loginSecondUserResponse.body.data.loginUser.token;
-    const acceptGroupInvitationResponse = await acceptGroupInvitationGraphQLRequest(
-      createdRequest,
-      secondToken,
-      { invitationUuid: uuid }
-    );
-    const {
-      acceptedMessage
-    } = acceptGroupInvitationResponse.body.data.acceptGroupInvitation;
+    expect(groupInvitation.inviter.firstname).toBe("Sarah");
+    expect(groupInvitation.invitee.firstname).toBe("Sam");
+    expect(groupInvitation.group.title).toBe("The Group You Need");
     expect(acceptedMessage).toBe("Successfully joined.");
+    // Now making sure the invitee was added to the group's members
+    // and that the user's nested group now contains the newly joined group.
+    expect(joinedGroup.uuid).toBe(groupUuid);
+    expect(joinedGroup.members.length).toBe(2);
+    expect(joinedGroup.members[0].firstname).toBe("Sam");
+    expect(joinedGroup.members[0].groups[0].uuid).toBe(groupUuid);
     done();
   });
 });

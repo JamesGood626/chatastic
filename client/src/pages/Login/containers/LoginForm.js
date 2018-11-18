@@ -69,22 +69,16 @@ class Login extends Component {
   //   this.resetState();
   // };
 
+  update = (cache, { data: { loginUser } }) => {
+    console.log("GOT THE loginUser data in update: ", loginUser);
+    this.props.updateAuthenticatedUser({
+      variables: { input: loginUser }
+    });
+  };
+
   render() {
     return (
-      <Mutation
-        mutation={LOGIN_USER}
-        update={(cache, { data: { loginUser } }) => {
-          console.log("GOT THE loginUser data in update: ", loginUser);
-          this.props.updateAuthenticatedUser({
-            variables: { input: loginUser }
-          });
-          // const { todos } = cache.readQuery({ query: GET_TODOS });
-          // cache.writeQuery({
-          //   query: GET_TODOS,
-          //   data: { todos: todos.concat([loginUser]) }
-          // });
-        }}
-      >
+      <Mutation mutation={LOGIN_USER} update={this.update}>
         {(loginUser, { data }) => {
           if (data) {
             return <Redirect to="/chat" />;

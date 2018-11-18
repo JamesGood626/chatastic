@@ -4,7 +4,7 @@ const GroupInvitation = require("../model/groupInvitation");
 // const { createMessage } = require("../../messages/services");
 // const { getUserById, getUserByUuid } = require("../../Accounts/services");
 const { getGroupById, getGroupByUuid } = require("../../Groups/services");
-const { getUserByUuid } = require("../../Accounts/services");
+const { getUserById, getUserByUuid } = require("../../Accounts/services");
 
 const getGroupInvitationByUuid = async uuid => {
   return await GroupInvitation.findOne({ uuid });
@@ -13,6 +13,7 @@ const getGroupInvitationByUuid = async uuid => {
 const createGroupInvitation = (input, userId) => {
   return new Promise(async (resolve, reject) => {
     const { groupUuid, inviteeUuid, ...groupInvitationInput } = input;
+    const inviter = await getUserById(userId);
     const invitee = await getUserByUuid(inviteeUuid);
     const group = await getGroupByUuid(groupUuid);
     groupInvitationInput.inviter = userId;
@@ -20,9 +21,11 @@ const createGroupInvitation = (input, userId) => {
     groupInvitationInput.group = group._id;
     groupInvitationInput.uuid = uuidv4();
     const groupInvitation = new GroupInvitation(groupInvitationInput);
-    invitee.groupInvitations = [groupInvitation, ...invitee.groupInvitations];
     try {
       await groupInvitation.save();
+      inviter.groupInvitations = [groupInvitation, ...inviter.groupInvitations];
+      invitee.groupInvitations = [groupInvitation, ...invitee.groupInvitations];
+      await inviter.save();
       await invitee.save();
       console.log("THE SAVED GROUP INVITATION: ", groupInvitation);
       console.log("THE SAVED INVITEE: ", invitee);
@@ -35,13 +38,18 @@ const createGroupInvitation = (input, userId) => {
 };
 
 const acceptGroupInvitation = async (input, userId) => {
+  // Should also be using the userId to get user and nest the group on their
+  // nested groups array.
   const { invitationUuid } = input;
   const { group: groupId } = await getGroupInvitationByUuid(invitationUuid);
   console.log("SHOULD BE THE GROUP ID: ", groupId);
   const group = await getGroupById(groupId);
   group.members = [...group.members, userId];
-  group.save();
-  return true;
+  await group.save();
+  const user = await getUserById(userId);
+  user.groups = [group, ...user.groups];
+  await user.save();
+  return group;
 };
 
 // Could just replace createGroupInvitation with a Higher Order Function and jsut

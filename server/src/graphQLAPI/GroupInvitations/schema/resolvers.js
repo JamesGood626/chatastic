@@ -37,7 +37,8 @@ const resolvers = {
         authorization
       );
       if (joinedGroup) {
-        return { acceptedMessage: "Successfully joined." };
+        console.log("THE JOINED GROUP IN MAIN RESOLVER: ", joinedGroup);
+        return { acceptedMessage: "Successfully joined.", joinedGroup };
       } else {
         throw new Error(
           "Database Error occured while accepting group invitation."
@@ -56,15 +57,22 @@ const resolvers = {
       return { declinedMessage: "Invitation Rejected." };
     }
   },
+  AcceptedStatus: {
+    joinedGroup: async ({ joinedGroup }, args, _context) => {
+      return await getGroupById(joinedGroup);
+    }
+  },
   GroupInvitation: {
     group: async ({ group }, args, _context) => {
       return await getGroupById(group);
     },
     inviter: async ({ inviter }, args, _context) => {
-      return await getUserById(inviter);
+      const user = await getUserById(inviter);
+      return user;
     },
     invitee: async ({ invitee }, args, _context) => {
-      return await getUserById(invitee);
+      const user = await getUserById(invitee);
+      return user;
     }
   }
   // Subscription: {

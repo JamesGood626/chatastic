@@ -1,18 +1,19 @@
 process.env.TEST_SUITE = "user-test";
 const request = require("supertest");
 const jwt = require("jsonwebtoken");
+const User = require("../model/user");
 const { JWT_SECRET } = require("../../../config");
 const { httpServer, apolloServer } = require("../../../app");
+const { dropCollection } = require("../../testHelpers");
 const {
-  graphQLQueryRequest,
-  graphQLQueryWithVariablesRequest,
-  graphQLMutationRequest,
-  postRequest,
-  postRequestWithHeaders,
-  dropUserCollection,
-  createUserGraphQLRequest,
-  loginUserGraphQLRequest
-} = require("../../testHelpers");
+  createUserGQLRequest,
+  getUserByUsernameGQLRequest
+} = require("../../testHelpers/accountsRequest");
+const {
+  createAndLoginUser,
+  createTwoUsers
+} = require("../../testHelpers/accountsOperations");
+
 const { createUser } = require("../services");
 
 // NOTE: write this down in ipad for later reference
@@ -25,21 +26,21 @@ const { createUser } = require("../services");
 // . chain, and my mutation's input wasn't being parsed
 // appropriately. Removing that did the trick.
 
-const userOne = {
+const userInput = {
   firstname: "Sam",
   lastname: "Holland",
   username: "BamBamSam",
   password: "supa-secret"
 };
 
-const userTwo = {
+const userTwoInput = {
   firstname: "Sarah",
   lastname: "Holland",
   username: "BamBamSar",
   password: "supa-secret"
 };
 
-const userLoginInput = {
+const loginInput = {
   username: "BamBamSam",
   password: "supa-secret"
 };
@@ -48,37 +49,13 @@ const userSearchInput = {
   username: "BamBamSam"
 };
 
-const userSearchQuery = `query getUserByUsernameOp ($input: UserSearchInput!) {
-                          getUserByUsername (input: $input) {
-                            uuid
-                            firstname
-                            lastname
-                            username
-                            message
-                          }
-                        }`;
-
-const getUserByUsernameGraphQLRequest = async (
-  createdRequest,
-  token,
-  userSearchInput
-) => {
-  const operationInfo = await graphQLQueryWithVariablesRequest(
-    userSearchInput,
-    userSearchQuery,
-    "getUserByUsernameOp"
-  );
-  const response = await postRequestWithHeaders(
-    createdRequest,
-    operationInfo,
-    token
-  );
-  return response;
-};
-
 describe("With the User resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
+
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
 
   beforeAll(async done => {
     server = await httpServer.listen(2000);
@@ -87,7 +64,7 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   afterEach(async done => {
-    await dropUserCollection();
+    await dropCollection(User);
     done();
   });
 
@@ -96,13 +73,10 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("create a user", async done => {
-    const response = await createUserGraphQLRequest(createdRequest, userOne);
-    const {
-      firstname,
-      lastname,
-      username,
-      token
-    } = response.body.data.createUser;
+    const { firstname, lastname, username, token } = await createUserGQLRequest(
+      createdRequest,
+      userInput
+    );
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
     expect(username).toBe("BamBamSam");
@@ -112,17 +86,11 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("login a user", async done => {
-    await createUserGraphQLRequest(createdRequest, userOne);
-    const response = await loginUserGraphQLRequest(
+    const { firstname, lastname, username, token } = await createAndLoginUser(
       createdRequest,
-      userLoginInput
+      userInput,
+      loginInput
     );
-    const {
-      firstname,
-      lastname,
-      username,
-      token
-    } = response.body.data.loginUser;
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
     expect(username).toBe("BamBamSam");
@@ -132,18 +100,14 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("get a user by username", async done => {
-    await createUserGraphQLRequest(createdRequest, userOne);
-    const createUserResonse = await createUserGraphQLRequest(
-      createdRequest,
-      userTwo
-    );
-    const { token } = createUserResonse.body.data.createUser;
-    const userSearchResponse = await getUserByUsernameGraphQLRequest(
+    const {
+      userTwoData: { token }
+    } = await createTwoUsers(createdRequest, userInput, userTwoInput);
+    const { username } = await getUserByUsernameGQLRequest(
       createdRequest,
       token,
       userSearchInput
     );
-    const { username } = userSearchResponse.body.data.getUserByUsername;
     expect(username).toBe(userSearchInput.username);
     done();
   });

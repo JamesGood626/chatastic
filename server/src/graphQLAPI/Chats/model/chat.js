@@ -13,6 +13,12 @@ const chatSchema = new Schema({
     type: Date,
     default: Date.now()
   },
+  senderUuid: {
+    type: String
+  },
+  recipientUuid: {
+    type: String
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User"

@@ -19,12 +19,26 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
   if (!user) {
     reject("Username or password is incorrect.");
   } else {
-    const { firstname, lastname, username, uuid, password } = user;
+    // doing this to avoid exposing _id and password of user
+    // to the client. See ./userType.js type Authentication
+    const {
+      firstname,
+      lastname,
+      username,
+      uuid,
+      password,
+      groups,
+      groupActivities,
+      groupInvitations
+    } = user;
     const authorization = {
       firstname,
       lastname,
       username,
       uuid,
+      groups,
+      groupActivities,
+      groupInvitations,
       token: createJWToken({ username, password })
     };
     resolve(authorization);

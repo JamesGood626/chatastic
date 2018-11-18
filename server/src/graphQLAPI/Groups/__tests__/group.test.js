@@ -1,20 +1,18 @@
 process.env.TEST_SUITE = "group-test";
 const request = require("supertest");
-const { httpServer, apolloServer, app } = require("../../../app");
+const { httpServer } = require("../../../app");
+const User = require("../../Accounts/model/user");
+const Group = require("../model/group");
+const { dropCollection } = require("../../testHelpers");
+const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
-  graphQLQueryRequest,
-  graphQLQueryWithVariablesRequest,
-  graphQLMutationRequest,
-  postRequest,
-  postRequestWithHeaders,
-  dropUserCollection,
-  dropGroupCollection,
-  createUserGraphQLRequest,
-  loginUserGraphQLRequest,
-  createGroupGraphQLRequest,
-  getGroupGraphQLRequest
-} = require("../../testHelpers");
-// const { resetGroups } = require("../services");
+  createGroupGQLRequest,
+  getGroupGQLRequest
+} = require("../../testHelpers/groupsRequest");
+const { getUserByUsername } = require("../../Accounts/services");
+const {
+  retrieveGroupActivitiesList
+} = require("../../GroupActivities/services");
 
 const user = {
   firstname: "Joe",
@@ -42,8 +40,8 @@ describe("With the Group resource a user may issue a GraphQL request to", () => 
   });
 
   afterEach(async done => {
-    await dropUserCollection();
-    await dropGroupCollection();
+    await dropCollection(Group);
+    await dropCollection(User);
     done();
   });
 
@@ -51,45 +49,35 @@ describe("With the Group resource a user may issue a GraphQL request to", () => 
     await server.close(done);
   });
 
-  test("create a group", async done => {
-    const createUserResponse = await createUserGraphQLRequest(
-      createdRequest,
-      user
-    );
-    const { token } = createUserResponse.body.data.createUser;
-    const response = await createGroupGraphQLRequest(
+  test("create a group and a corresponding group activity", async done => {
+    const { token } = await createUserGQLRequest(createdRequest, user);
+    const { uuid, title, creator } = await createGroupGQLRequest(
       createdRequest,
       token,
       groupOne
     );
-    const { title, creator } = response.body.data.createGroup;
     expect(title).toBe("Group One");
-    expect(creator.username).toBe("joesal");
-    expect(creator.groups.length).toBe(1);
     expect(creator.groups[0].title).toBe("Group One");
+    expect(creator.groups.length).toBe(1);
+    expect(creator.groupActivities.length).toBe(1);
+    expect(creator.groupActivities[0].groupUuid).toBe(uuid);
     done();
   });
 
   test("get group by uuid", async done => {
-    const createUserResponse = await createUserGraphQLRequest(
-      createdRequest,
-      user
-    );
-    const { token } = createUserResponse.body.data.createUser;
-    const createGroupResponse = await createGroupGraphQLRequest(
+    const { token } = await createUserGQLRequest(createdRequest, user);
+    const { uuid } = await createGroupGQLRequest(
       createdRequest,
       token,
       groupOne
     );
-    const { uuid } = createGroupResponse.body.data.createGroup;
     const getGroupInput = {
       groupUuid: uuid
     };
-    const response = await getGroupGraphQLRequest(
+    const { title, uuid: retrievedGroupUuid } = await getGroupGQLRequest(
       createdRequest,
       getGroupInput
     );
-    const { title, uuid: retrievedGroupUuid } = response.body.data.getGroup;
     expect(title).toBe("Group One");
     expect(uuid).toBe(retrievedGroupUuid);
     done();

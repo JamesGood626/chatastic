@@ -20,9 +20,11 @@ const getChatByChannel = async channel => {
 const createDirectChat = (input, messageId) => {
   return new Promise(async (resolve, reject) => {
     input.messages = [messageId];
+    console.log("DATA YOU'RE CREATING THE DIRECT CHAT WITH: ", input);
     const chat = new Chat(input);
     try {
       await chat.save();
+      console.log("THE SAVED CHAT WITH SENDER AND RECIPIENT: ", chat);
       resolve(chat);
     } catch (e) {
       console.log("Error saving chat: ", e);
@@ -57,18 +59,14 @@ const createMessageAndChat = async input => {
   // Necessary for subscriptions
   messageInput.channel = channel;
   chatInput.channel = channel;
+  // chatInput.senderUuid = messageInput.senderUuid;
+  // chatInput.recipientUuid = messageInput.recipientUuid;
   // don't forget you were destructing _id from here
   console.log("What you're passing into create message: ", messageInput);
   const { _id } = await createMessage(messageInput);
   console.log("What you're passing into create direct chat: ", chatInput);
   createdChat = await createDirectChat(chatInput, _id);
   return createdChat;
-};
-
-const addGroupActivity = async (user, createdGroupActivity) => {
-  user.groupActivities = [createdGroupActivity, ...user.groupActivities];
-  await user.save();
-  console.log("SAVED USER in addGroupActivity: ", user);
 };
 
 const updateGroupActivity = async (
@@ -90,64 +88,41 @@ const updateGroupActivity = async (
   );
 };
 
-const createOrUpdateGroupActivity = async (input, createdChat) => {
+const prepareUpdateGroupActivity = async (input, createdChat) => {
   return new Promise(async (resolve, reject) => {
     console.log("THE INPUT YOU NEED: ", input);
     const { groupUuid, senderUuid, recipientUuid } = input;
     const sender = await getUserByUuid(senderUuid);
     const recipient = await getUserByUuid(recipientUuid);
+    console.log("THIS IS THE SENDER BEFORE ERR: ", sender);
+    console.log("THIS IS THE RECIPIENT BEFORE ERR: ", recipient);
     console.log(
       "THE SECOND TIME AROUND THE SENDER SHOULD HAVE SOMETHING1: ",
       sender.groupActivities
     );
 
     // BREAK THIS
-    let senderGroupActivities;
-    let senderGAFilter;
-    if (sender.groupActivities.length > 0) {
-      senderGroupActivities = await retrieveGroupActivitiesList(
-        sender.groupActivities
-      );
-      console.log(
-        "THIS IS WHAT COMES BACK FROM THE RETRIEVED GROUP ACTIVITIES LIST: ",
-        senderGroupActivities
-      );
-      senderGAFilter = senderGroupActivities.filter(
-        groupActivity => groupActivity.groupUuid === groupUuid
-      );
-      await updateGroupActivity(sender, senderGAFilter[0], createdChat);
-    } else {
-      const groupActivityInput = {
-        uuid: uuidv4(),
-        groupUuid,
-        directChats: createdChat
-      };
-      createdGroupActivity = new GroupActivity(groupActivityInput);
-      await addGroupActivity(sender, createdGroupActivity);
-      await createdGroupActivity.save();
-    }
+    const senderGroupActivities = await retrieveGroupActivitiesList(
+      sender.groupActivities
+    );
+    console.log(
+      "THIS IS WHAT COMES BACK FROM THE RETRIEVED GROUP ACTIVITIES LIST: ",
+      senderGroupActivities
+    );
+    const senderGAFilter = senderGroupActivities.filter(
+      groupActivity => groupActivity.groupUuid === groupUuid
+    );
+    await updateGroupActivity(sender, senderGAFilter[0], createdChat);
 
     // AND THIS -> into a reusable function
-    let recipientGroupActivities;
-    let recipientGAFilter;
-    if (recipient.groupActivities.length > 0) {
-      recipientGroupActivities = await retrieveGroupActivitiesList(
-        recipient.groupActivities
-      );
-      recipientGAFilter = recipientGroupActivities.filter(
-        groupActivity => groupActivity.groupUuid === groupUuid
-      );
-      await updateGroupActivity(recipientGAFilter[0]);
-    } else {
-      const groupActivityInput = {
-        uuid: uuidv4(),
-        groupUuid,
-        directChats: createdChat
-      };
-      createdGroupActivity = new GroupActivity(groupActivityInput);
-      await addGroupActivity(recipient, createdGroupActivity);
-      await createdGroupActivity.save();
-    }
+    const recipientGroupActivities = await retrieveGroupActivitiesList(
+      recipient.groupActivities
+    );
+    const recipientGAFilter = recipientGroupActivities.filter(
+      groupActivity => groupActivity.groupUuid === groupUuid
+    );
+    await updateGroupActivity(recipient, recipientGAFilter[0], createdChat);
+
     resolve(true);
     // Only if one hasn't been created for a group yet
     // const createdGroupActivity = await createGroupActivity(groupActivityInput);
@@ -172,7 +147,7 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
     // may be placed on the message as sender
     createdChat = await createMessageAndChat(input);
     // Should have groupUuid by this point to decide how to proceed below.
-    await createOrUpdateGroupActivity(input, createdChat);
+    await prepareUpdateGroupActivity(input, createdChat);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);

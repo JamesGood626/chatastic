@@ -10,6 +10,8 @@ const ChatTypeDef = gql`
     title: String
     createdAt: Date!
     creator: User
+    senderUuid: String!
+    recipientUuid: String!
     messages: [Message]
   }
 

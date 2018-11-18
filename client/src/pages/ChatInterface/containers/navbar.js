@@ -4,7 +4,7 @@ import { Link } from "@reach/router";
 // import { client } from "../../../App";
 import { Query, Mutation, graphql, compose } from "react-apollo";
 import { gql } from "apollo-boost";
-import { ALL_USERS } from "../../../graphQL/queries/remote/accounts";
+import { LOGIN_USER } from "../../../graphQL/mutations/remote/accounts";
 import { getAuthenticatedUser } from "../../../graphQL/queries/local/accounts";
 
 import AdditionalOptions from "./additionalOptions";
@@ -36,30 +36,15 @@ const ChatNavBlockList = styled.ul`
   background: #d40;
 `;
 
-const userInput = gql`
-  input UserInput {
-    id: Int!
-    firstname: String!
-    lastname: String!
-    username: String!
-    password: String!
-    channelId: Int!
-  }
-`;
-
-const CREATE_USER = gql`
-  mutation createUser($userInput: UserInput!) {
-    createUser(input: $userInput) {
-      firstname
-    }
-  }
-`;
-
 class Navbar extends Component {
   componentDidMount = () => {
-    console.log("PROPS FOR NAVBAR: ", this.props);
+    console.log("PROPS FOR NAVBAR: ", this.props.authenticatedUser);
     // const authenticatedUser = client.readQuery(getAuthenticatedUser);
     // console.log(authenticatedUser);
+    const { token } = this.props.authenticatedUser;
+    if (token) {
+      localStorage.setItem("token", token);
+    }
   };
 
   render() {

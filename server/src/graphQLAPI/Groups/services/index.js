@@ -4,6 +4,7 @@ const { ForbiddenError } = require("apollo-server");
 const Group = require("../model/group");
 const authorizeRequest = require("../../authorization");
 const { getUserById } = require("../../Accounts/services");
+const { addGroupActivity } = require("../../GroupActivities/services");
 const {
   TOKEN_EXPIRED_MESSAGE,
   TOKEN_DECODING_MESSAGE
@@ -32,16 +33,20 @@ const createGroup = input => {
 
 const assignCreatorAndCreateGroup = async (userId, input) => {
   let createdGroup;
+  let user;
   if (userId && input) {
     input.creator = userId;
     input.uuid = uuidv1() + uuidv4();
     input.members = [userId];
-    const user = await getUserById(userId);
-    // console.log("RETRIEVED USER SO I CAN NEST GROUP: ", user);
+    user = await getUserById(userId);
     createdGroup = await createGroup(input);
+    // !!!!! ******** !!!!!!!
+    // Create the group activity and add it to the user's ensted group activity array.
+    console.log("THIS INPUT SHOULD HAVE GROUP UUID: ", createdGroup);
+    user = await addGroupActivity(user, createdGroup.uuid);
     user.groups = [...user.groups, createdGroup._id];
     await user.save();
-    // console.log("NESTED GROUP ON USER: ", user);
+    console.log("NESTED GROUP ON USER: ", user);
     return createdGroup;
   } else {
     throw new Error("Something went wrong while creating group");
