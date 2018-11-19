@@ -114,10 +114,6 @@ const loginUserGQLRequest = async (
   const response = await postRequest(createdRequest, operationInfo);
   if (debug) {
     console.log("loginUser response body: ", response.body);
-    console.log(
-      "loginUser groupInvitations: ",
-      response.body.data.loginUser.groupInvitations
-    );
   }
   return response.body.data.loginUser;
 };

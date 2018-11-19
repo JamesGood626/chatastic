@@ -10,15 +10,15 @@ const ChatTypeDef = gql`
     title: String
     createdAt: Date!
     creator: User
-    senderUuid: String!
-    recipientUuid: String!
+    senderUsername: String!
+    recipientUsername: String!
     messages: [Message]
   }
 
   input CreateDirectChatInput {
     groupUuid: String!
-    recipientUuid: String!
-    senderUuid: String!
+    recipientUsername: String!
+    senderUsername: String!
     messageInput: createMessageInput!
   }
 

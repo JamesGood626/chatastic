@@ -42,11 +42,9 @@ const assignCreatorAndCreateGroup = async (userId, input) => {
     createdGroup = await createGroup(input);
     // !!!!! ******** !!!!!!!
     // Create the group activity and add it to the user's ensted group activity array.
-    console.log("THIS INPUT SHOULD HAVE GROUP UUID: ", createdGroup);
     user = await addGroupActivity(user, createdGroup.uuid);
     user.groups = [...user.groups, createdGroup._id];
     await user.save();
-    console.log("NESTED GROUP ON USER: ", user);
     return createdGroup;
   } else {
     throw new Error("Something went wrong while creating group");

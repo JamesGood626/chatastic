@@ -13,10 +13,10 @@ const chatSchema = new Schema({
     type: Date,
     default: Date.now()
   },
-  senderUuid: {
+  senderUsername: {
     type: String
   },
-  recipientUuid: {
+  recipientUsername: {
     type: String
   },
   creator: {

@@ -1,40 +1,46 @@
 process.env.TEST_SUITE = "model-test";
 const request = require("supertest");
 const { httpServer } = require("../../../app");
+const { dropCollection } = require("../../testHelpers");
+const User = require("../../Accounts/model/user");
+const Group = require("../../Groups/model/group");
+const Chat = require("../../Chats/model/chat");
+const Message = require("../model/message");
+const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
-  graphQLQueryRequest,
+  createGroupGQLRequest,
+  getGroupGQLRequest
+} = require("../../testHelpers/groupsRequest");
+const {
+  createDirectChatGQLRequest,
+  createGroupChatGQLRequest
+} = require("../../testHelpers/chatsRequest");
+// Todo -> create a messageRequest.js helper test file.
+const {
   graphQLMutationRequest,
-  postRequest,
-  postRequestWithHeaders,
-  dropUserCollection,
-  dropChatCollection,
-  dropGroupCollection,
-  dropMessageCollection,
-  createUserGraphQLRequest,
-  loginUserGraphQLRequest,
-  createGroupGraphQLRequest,
-  createDirectChatGraphQLRequest,
-  getGroupGraphQLRequest,
-  createGroupInvitationGraphQLRequest,
-  acceptGroupInvitationGraphQLRequest
-} = require("../../testHelpers");
+  postRequestWithHeaders
+} = require("../../testHelpers/index.js");
 
 const userOne = {
-  firstname: "Sarah",
-  lastname: "Salmon",
-  username: "sarsal",
-  password: "sardines"
+  firstname: "Sam",
+  lastname: "Holland",
+  username: "BamBamSam",
+  password: "supa-secret"
 };
 
 const userTwo = {
-  firstname: "Phil",
-  lastname: "Knight",
-  username: "pk",
-  password: "pk"
+  firstname: "Sarah",
+  lastname: "Holland",
+  username: "BamBamSar",
+  password: "supa-secret"
 };
 
-const groupOne = {
+const groupInput = {
   title: "Group One"
+};
+
+const groupChat = {
+  title: "Ze Group Chat"
 };
 
 const directChat = {
@@ -46,6 +52,11 @@ const directChat = {
 
 const messageOne = {
   text: "This is a message.",
+  sentDate: Date.now()
+};
+
+const messageTwo = {
+  text: "This is a followup message.",
   sentDate: Date.now()
 };
 
@@ -62,88 +73,124 @@ const createMessageMutation = `mutation createMessageInExistingChatOp($input: cr
 const createMessageGraphQLRequest = async (
   createdRequest,
   token,
-  message = messageOne
+  message,
+  debug = false
 ) => {
   const operationInfo = await graphQLMutationRequest(
-    message,
     createMessageMutation,
-    "createMessageInExistingChatOp"
+    "createMessageInExistingChatOp",
+    message
   );
   const response = await postRequestWithHeaders(
     createdRequest,
     operationInfo,
     token
   );
-  return response;
+  if (debug) {
+    console.log(
+      "Create message in existing chat response body: ",
+      response.body
+    );
+  }
+  return response.body.data.createMessageInExistingChat;
 };
 
 describe("With Message resources a user may", () => {
   let createdRequest;
   let server;
 
-  test("1+1 = 2", () => {
-    expect(1 + 1).toBe(2);
+  // test("1+1 = 2", () => {
+  //   expect(1 + 1).toBe(2);
+  // });
+
+  beforeAll(async done => {
+    server = await httpServer.listen(3004);
+    createdRequest = await request.agent(server);
+    done();
   });
 
-  // beforeAll(async done => {
-  //   server = await httpServer.listen(3004);
-  //   createdRequest = await request.agent(server);
-  //   done();
-  // });
+  beforeEach(async done => {
+    await dropCollection(Message);
+    await dropCollection(Chat);
+    await dropCollection(Group);
+    await dropCollection(User);
+    done();
+  });
 
-  // beforeEach(async done => {
-  //   await dropMessageCollection();
-  //   await dropChatCollection();
-  //   await dropUserCollection();
-  //   done();
-  // });
+  afterAll(async done => {
+    await server.close(done);
+  });
 
-  // afterAll(async done => {
-  //   await server.close(done);
-  // });
+  test("create a message in a group chat", async done => {
+    const { token } = await createUserGQLRequest(createdRequest, userTwo);
+    const { uuid } = await createGroupGQLRequest(
+      createdRequest,
+      token,
+      groupInput
+    );
+    groupChat.groupUuid = uuid;
+    const { title, channel } = await createGroupChatGQLRequest(
+      createdRequest,
+      token,
+      groupChat
+    );
+    // Starting to create messages in the group chat
+    messageOne.chatChannel = channel;
+    const { text: messageOneText } = await createMessageGraphQLRequest(
+      createdRequest,
+      token,
+      messageOne
+    );
+    messageTwo.chatChannel = channel;
+    const { text: messageTwoText } = await createMessageGraphQLRequest(
+      createdRequest,
+      token,
+      messageTwo
+    );
+    expect(messageOneText).toBe("This is a message.");
+    expect(messageTwoText).toBe("This is a followup message.");
+    //
+    const getGroupInput = {
+      groupUuid: uuid
+    };
+    const { chats } = await getGroupGQLRequest(
+      createdRequest,
+      getGroupInput,
+      true
+    );
+    expect(chats[0].messages.length).toBe(2);
+    done();
+  });
 
-  // test("create a message", async done => {
-  //   const createUserOneResponse = await createUserGraphQLRequest(
+  // test("create a message in a direct chat", async done => {
+  //   const { username: senderUsername } = await createUserGQLRequest(
   //     createdRequest,
   //     userOne
   //   );
-  //   const createUserTwoResponse = await createUserGraphQLRequest(
+  //   const { token, username: recipientUsername } = await createUserGQLRequest(
   //     createdRequest,
   //     userTwo
   //   );
-  //   const { uuid } = createUserOneResponse.body.data.createUser;
-  //   const {
-  //     token,
-  //     uuid: senderUuid
-  //   } = createUserTwoResponse.body.data.createUser;
-  //   const createGroupResponse = await createGroupGraphQLRequest(
+  //   const { uuid: groupUuid } = await createGroupGQLRequest(
   //     createdRequest,
   //     token,
   //     groupOne
   //   );
-  //   const { uuid: groupUuid } = createGroupResponse.body.data.createGroup;
   //   // Phil sending Sarah a message
   //   directChat.groupUuid = groupUuid;
-  //   directChat.senderUuid = senderUuid;
-  //   directChat.recipientUuid = uuid;
+  //   directChat.senderUsername = senderUsername;
+  //   directChat.recipientUsername = recipientUsername;
   //   console.log("before the error");
-  //   const createDirectChatResponse = await createDirectChatGraphQLRequest(
+  //   const { channel, messages } = await createDirectChatGQLRequest(
   //     createdRequest,
   //     token,
   //     directChat
   //   );
-  //   console.log("Where the error occurs: ", createDirectChatResponse.body);
-  //   const {
-  //     channel,
-  //     messages
-  //   } = createDirectChatResponse.body.data.createDirectChat;
   //   // Need to add chatChannel before sending request
   //   messageOne.chatChannel = channel;
   //   // !!**!! Still needed to test that a message
-  //   const response = await createMessageGraphQLRequest(createdRequest, token);
-  //   expect(response.body.data.createMessageInExistingChat.text).toBe(
-  //     "This is a message."
-  //   );
+  //   const { text } = await createMessageGQLRequest(createdRequest, token);
+  //   expect(text).toBe("This is a message.");
   //   // To better cover this scenario
   //   // I could grab the users by username and check that
   //   // their groupActivities and check that their shared chat has had a message

@@ -37,7 +37,6 @@ const resolvers = {
         authorization
       );
       if (joinedGroup) {
-        console.log("THE JOINED GROUP IN MAIN RESOLVER: ", joinedGroup);
         return { acceptedMessage: "Successfully joined.", joinedGroup };
       } else {
         throw new Error(

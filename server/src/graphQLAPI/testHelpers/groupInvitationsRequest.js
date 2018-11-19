@@ -20,12 +20,14 @@ const createGroupInvitationMutation = `mutation createGroupInvitationOp($input: 
       title
     }
     inviter {
+      username
       firstname
       groupInvitations {
         uuid
       }
     }
     invitee {
+      username
       firstname
       groupInvitations {
         uuid
@@ -42,6 +44,12 @@ const acceptGroupInvitationMutation = `mutation acceptGroupInvitationOp($input: 
       members {
         firstname
         groups {
+          uuid
+        }
+        groupActivities {
+          groupUuid
+        }
+        groupInvitations {
           uuid
         }
       }

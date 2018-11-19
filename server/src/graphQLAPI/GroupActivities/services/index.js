@@ -6,11 +6,10 @@ const GroupActivity = require("../model/groupActivity");
 
 const getGroupActivityById = async id => {
   const groupActivity = await GroupActivity.findById(id);
-  console.log("THE FOUND groupActivity: ", groupActivity);
   return groupActivity;
 };
 
-// takes uuid, groupUuid, chatId as input
+// takes uuid and groupUuid as input
 const createGroupActivity = input => {
   return new Promise(async (resolve, reject) => {
     const groupActivity = new GroupActivity(input);
@@ -31,7 +30,6 @@ const addGroupActivity = async (user, groupUuid) => {
   };
   const createdGroupActivity = await createGroupActivity(input);
   user.groupActivities = [createdGroupActivity._id, ...user.groupActivities];
-  console.log("USER RETURNED FROM addGroupActivity: ", user);
   return user;
 };
 
@@ -41,17 +39,12 @@ const updateGroupActivity = async (
   createdChat
 ) => {
   // in this case filtered should have an object
-  console.log("FILTERED IN UPDATE: ", filteredGroupActivity);
   filteredGroupActivity.directChats = [
     createdChat,
     ...filteredGroupActivity.directChats
   ];
   user.groupActivities = [filteredGroupActivity, ...user.groupActivities];
   await user.save();
-  console.log(
-    "THE USER'S GROUP ACTIVITIES WHEN UPDATING: ",
-    user.groupActivities
-  );
 };
 
 const retrieveGroupActivitiesList = async IdArr => {

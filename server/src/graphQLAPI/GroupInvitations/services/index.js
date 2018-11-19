@@ -1,10 +1,9 @@
 const uuidv4 = require("uuid/v4");
 const authorizeRequest = require("../../authorization");
 const GroupInvitation = require("../model/groupInvitation");
-// const { createMessage } = require("../../messages/services");
-// const { getUserById, getUserByUuid } = require("../../Accounts/services");
 const { getGroupById, getGroupByUuid } = require("../../Groups/services");
 const { getUserById, getUserByUuid } = require("../../Accounts/services");
+const { addGroupActivity } = require("../../GroupActivities/services");
 
 const getGroupInvitationByUuid = async uuid => {
   return await GroupInvitation.findOne({ uuid });
@@ -27,8 +26,6 @@ const createGroupInvitation = (input, userId) => {
       invitee.groupInvitations = [groupInvitation, ...invitee.groupInvitations];
       await inviter.save();
       await invitee.save();
-      console.log("THE SAVED GROUP INVITATION: ", groupInvitation);
-      console.log("THE SAVED INVITEE: ", invitee);
       resolve(groupInvitation);
     } catch (e) {
       console.log("Error saving chat: ", e);
@@ -38,17 +35,28 @@ const createGroupInvitation = (input, userId) => {
 };
 
 const acceptGroupInvitation = async (input, userId) => {
-  // Should also be using the userId to get user and nest the group on their
-  // nested groups array.
   const { invitationUuid } = input;
-  const { group: groupId } = await getGroupInvitationByUuid(invitationUuid);
-  console.log("SHOULD BE THE GROUP ID: ", groupId);
+  const {
+    _id,
+    group: groupId,
+    inviter: inviterId
+  } = await getGroupInvitationByUuid(invitationUuid);
+  const inviter = await getUserById(inviterId);
   const group = await getGroupById(groupId);
   group.members = [...group.members, userId];
-  await group.save();
-  const user = await getUserById(userId);
+  let user = await getUserById(userId);
+  user = await addGroupActivity(user, group.uuid);
   user.groups = [group, ...user.groups];
+  user.groupInvitations = user.groupInvitations.filter(
+    invitation => invitation.toString() !== _id.toString()
+  );
+  inviter.groupInvitations = inviter.groupInvitations.filter(
+    invitation => invitation.toString() !== _id.toString()
+  );
   await user.save();
+  await inviter.save();
+  await group.save();
+  console.log("THE SAVED USER: ", user);
   return group;
 };
 

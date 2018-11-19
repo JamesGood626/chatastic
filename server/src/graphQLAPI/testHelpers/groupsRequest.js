@@ -37,6 +37,9 @@ const getGroupQuery = `query getGroupOp($input: GetGroupInput!) {
     title
     chats {
       title
+      messages {
+        text
+      }
     }
     members {
       firstname

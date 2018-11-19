@@ -34,6 +34,7 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
 const createGroupChatMutation = `mutation createGroupChatOp($input: CreateGroupChatInput!) {
   createGroupChat(input: $input) {
     title
+    channel
   }
 }`;
 

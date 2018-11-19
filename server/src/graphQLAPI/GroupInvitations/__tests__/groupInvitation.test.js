@@ -10,10 +10,11 @@ const {
   loginAndCreateGroupSetup,
   loginAndAcceptGroupInvitation
 } = require("../../testHelpers/groupInvitationsOperations");
-const { getUserByUsername } = require("../../Accounts/services");
+const { getUserByUsername, getUserById } = require("../../Accounts/services");
 const Group = require("../../Groups/model/group");
 const GroupInvitation = require("../model/groupInvitation");
 const User = require("../../Accounts/model/user");
+const { getGroupById } = require("../../Groups/services");
 
 const userOne = {
   firstname: "Sam",
@@ -89,7 +90,7 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
     expect(group.title).toBe("The Group You Need");
     expect(inviter.firstname).toBe("Sarah");
     expect(invitee.firstname).toBe("Sam");
-    // Ensure that both users have a groupInvitation
+    // Check that both users have a groupInvitation
     // in their nested groupInvitations array.
     // Necessary to support UI indicators
     expect(inviter.groupInvitations.length).toBe(1);
@@ -107,12 +108,32 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
     expect(groupInvitation.invitee.firstname).toBe("Sam");
     expect(groupInvitation.group.title).toBe("The Group You Need");
     expect(acceptedMessage).toBe("Successfully joined.");
-    // Now making sure the invitee was added to the group's members
+    const userOne = joinedGroup.members[0];
+    const userTwo = joinedGroup.members[1];
+    // Checking that both user's groupActivities array contain the required group
+    expect(userOne.groupActivities.length).toBe(1);
+    expect(userTwo.groupActivities.length).toBe(1);
+    expect(userOne.groupActivities[0].groupUuid).toBe(groupUuid);
+    expect(userTwo.groupActivities[0].groupUuid).toBe(groupUuid);
+    // Checking that the invitee was added to the group's members
     // and that the user's nested group now contains the newly joined group.
     expect(joinedGroup.uuid).toBe(groupUuid);
     expect(joinedGroup.members.length).toBe(2);
-    expect(joinedGroup.members[0].firstname).toBe("Sam");
-    expect(joinedGroup.members[0].groups[0].uuid).toBe(groupUuid);
+    expect(userOne.firstname).toBe("Sam");
+    expect(userOne.groups[0].uuid).toBe(groupUuid);
+    // !! Gonna need to look into this... Would be nice to actually receive
+    // the data representation that I'm expecting for the UI. Or maybe I'll just have to
+    // implement a refetch...
+    // Checking that both of the user's groupInvitation arrays are empty.
+    // These two checks will fail with the information returned from the
+    // acceptGroupInvitation resolver.
+    // expect(userOne.groupInvitations.length).toBe(0);
+    // expect(userTwo.groupInvitations.length).toBe(0);
+    // However, manually fetching the below will show that group invitations array
+    // are empty.
+    // const updatedUser = await getUserByUsername("BamBamSar");
+    // const updatedGroup = await getGroupById(updatedUser.groups[0]);
+    // const updatedUserTwo = await getUserById(updatedGroup.members[1]);
     done();
   });
 });
