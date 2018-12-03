@@ -15,9 +15,7 @@ import Main from "./Main";
 import "./reset.css";
 
 const authLink = setContext((request, previousContext) => {
-  console.log("THE REQUEST IN setContext: ", request);
   const token = localStorage.getItem("token");
-  console.log("THE RETRIEVED TOKEN: ", token);
   return {
     headers: { authorization: `Bearer ${token}` }
   };
@@ -65,17 +63,19 @@ const defaultState = {
     lastname: null,
     username: null,
     uuid: null,
-    token: null,
-    chats: null
+    token: null
   },
-  groups: {
-    __typename: "groups",
-    title: null,
-    members: []
-  }
+  groups: [],
+  groupActivities: [],
+  groupInvitations: []
 };
 
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({
+  dataIdFromObject: o => {
+    console.log("dataIfFromObject executing: ", o);
+    return o.uuid;
+  }
+});
 
 const stateLink = withClientState({
   cache,
@@ -83,7 +83,16 @@ const stateLink = withClientState({
   resolvers: {
     Mutation: {
       updateAuthenticatedUser: (_, { input }, { cache }) => {
-        const { firstname, lastname, username, uuid, token, chats } = input;
+        const {
+          firstname,
+          lastname,
+          username,
+          uuid,
+          token,
+          groups,
+          groupActivities,
+          groupInvitations
+        } = input;
         console.log("DA input: ", input);
         const query = gql`
           query getAuthenticatedUser {
@@ -94,9 +103,6 @@ const stateLink = withClientState({
               username
               uuid
               token
-              chats {
-                channel
-              }
             }
           }
         `;
@@ -110,40 +116,39 @@ const stateLink = withClientState({
             lastname,
             username,
             uuid,
-            token,
-            chats
-          }
-        };
-        console.log("NEW DATA: ", data);
-        cache.writeData({ query, data });
-      },
-      updateGroups: (_, { input }, { cache }) => {
-        // const { firstname, lastname, username, uuid, token, chats } = input;
-        console.log("input for updateGroups: ", input);
-        const query = gql`
-          query getGroups {
-            groups @client {
-              __typename
-              title
-              members {
-                username
-              }
-            }
-          }
-        `;
-        const previousState = cache.readQuery({ query });
-        console.log("PREVIOUS STATE: ", previousState);
-        const data = {
-          ...previousState,
-          groups: {
-            ...previousState.groups,
-            // title,
-            members: [...previousState.groups.members]
-          }
+            token
+          },
+          groups: groups[0] !== null ? groups : [],
+          groupActivities: groupActivities[0] !== null ? groupActivities : [],
+          groupInvitations: groupInvitations[0] !== null ? groupInvitations : []
         };
         console.log("NEW DATA: ", data);
         cache.writeData({ query, data });
       }
+      // updateGroups: (_, { input }, { cache }) => {
+      //   // const { firstname, lastname, username, uuid, token, chats } = input;
+      //   console.log("input for updateGroups: ", input);
+      //   const query = gql`
+      //     query getGroups {
+      //       groups @client {
+      //         __typename
+      //         title
+      //       }
+      //     }
+      //   `;
+      //   const previousState = cache.readQuery({ query });
+      //   console.log("PREVIOUS STATE: ", previousState);
+      //   const data = {
+      //     ...previousState,
+      //     groups: {
+      //       ...previousState.groups,
+      //       // title,
+      //       members: [...previousState.groups.members]
+      //     }
+      //   };
+      //   console.log("NEW DATA: ", data);
+      //   cache.writeData({ query, data });
+      // }
     }
   }
 });

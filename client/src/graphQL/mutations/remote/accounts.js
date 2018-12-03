@@ -35,9 +35,13 @@ export const LOGIN_USER = gql`
       lastname
       username
       token
+      uuid
       groups {
         uuid
         title
+        creator {
+          username
+        }
         chats {
           channel
           title
@@ -48,9 +52,12 @@ export const LOGIN_USER = gql`
         }
       }
       groupActivities {
+        uuid
         groupUuid
         directChats {
           channel
+          senderUsername
+          recipientUsername
           messages {
             text
             sentDate

@@ -41,8 +41,8 @@ const H3 = styled.h3`
 `;
 
 const initialState = {
-  username: "",
-  password: ""
+  username: "good",
+  password: "good"
 };
 
 class Login extends Component {
@@ -63,6 +63,11 @@ class Login extends Component {
     });
   };
 
+  componentDidUpdate = () => {
+    console.log("LoginForm updated state");
+    console.log(this.state);
+  };
+
   // submitCreateUser = e => {
   //   e.preventDefault();
   //   createUser({ variables: { type: this.state } });
@@ -70,6 +75,14 @@ class Login extends Component {
   // };
 
   update = (cache, { data: { loginUser } }) => {
+    // So loginUser should have the:
+    // groups
+    // groupActivities
+    // groupInvitations
+    // Which I can destructure off and use other clientside resolvers
+    // to update the cache with. -> And that state on the cache
+    // is what my components that I mapped out in my notes will need
+    // to fulfill their tasks!
     console.log("GOT THE loginUser data in update: ", loginUser);
     this.props.updateAuthenticatedUser({
       variables: { input: loginUser }

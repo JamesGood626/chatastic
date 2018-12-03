@@ -6,9 +6,58 @@ import { Query, Mutation, graphql, compose } from "react-apollo";
 import { gql } from "apollo-boost";
 import { LOGIN_USER } from "../../../graphQL/mutations/remote/accounts";
 import { getAuthenticatedUser } from "../../../graphQL/queries/local/accounts";
+import { getGroups } from "../../../graphQL/queries/local/groups";
+import { getGroupActivities } from "../../../graphQL/queries/local/groupActivities";
+import { getGroupInvitations } from "../../../graphQL/queries/local/groupInvitations";
 
 import AdditionalOptions from "./additionalOptions";
 import MessageList from "./messageList";
+
+const renderList = (data, key) => data.map(item => <li>{item[key]}</li>);
+
+const listGroupChats = groupChats =>
+  groupChats.map(chat => <li id={chat.channel}>{chat.title}</li>);
+
+const normalizeData = (data, key) => {
+  if (data.length === 0) {
+    return null;
+  }
+  return data.reduce((acc, curr) => {
+    acc = {
+      ...acc,
+      [curr[key]]: curr
+    };
+    return acc;
+  }, {});
+};
+
+const renderIfGroupActivityHasChat = (groupActivity, uuid, username) => {
+  const ga = groupActivity[uuid];
+  if (ga.hasOwnProperty("directChats") && ga.directChats[0] !== null) {
+    return ga.directChats.map(chat => (
+      <li>
+        {username === chat.senderUsername
+          ? chat.recipientUsername
+          : chat.senderUsername}
+      </li>
+    ));
+  }
+  return null;
+};
+
+const groupHasChats = group => {
+  if (group.hasOwnProperty("chats") && group.chats[0] !== null) {
+    return true;
+  }
+  return false;
+};
+
+// Todo:
+// four buttons for ->
+// create group
+// invite to group
+// create chat
+// pending invitations
 
 const NavAside = styled.aside`
   display: flex;
@@ -36,19 +85,57 @@ const ChatNavBlockList = styled.ul`
   background: #d40;
 `;
 
+// TODO:
+// 1. Get groupInvitations working
+// 2. Test
+// 3. Refactor
 class Navbar extends Component {
+  state = {
+    activeGroupObj: null,
+    normalizedGroups: null,
+    normalizedGroupActivities: null
+  };
+
   componentDidMount = () => {
-    console.log("PROPS FOR NAVBAR: ", this.props.authenticatedUser);
-    // const authenticatedUser = client.readQuery(getAuthenticatedUser);
-    // console.log(authenticatedUser);
+    const { groups, groupActivities } = this.props;
+    if (groups.length > 0) {
+      const normalizedGroups = normalizeData(groups, "uuid");
+      const normalizedGroupActivities = normalizeData(
+        groupActivities,
+        "groupUuid"
+      );
+      this.setLoadedState(
+        groups[0],
+        normalizedGroups,
+        normalizedGroupActivities
+      );
+    }
+    console.log("Navbar props: ", this.props);
     const { token } = this.props.authenticatedUser;
     if (token) {
       localStorage.setItem("token", token);
     }
   };
 
+  setLoadedState = (group, normalizedGroups, normalizedGroupActivities) => {
+    this.setState({
+      activeGroupObj: group,
+      normalizedGroups,
+      normalizedGroupActivities
+    });
+  };
+
+  componentDidUpdate = (prevProps, prevState) => {
+    console.log("LOADED STATE SET: ", this.state);
+  };
+
   render() {
-    const { firstname, lastname } = this.props.authenticatedUser;
+    const { firstname, lastname, username } = this.props.authenticatedUser;
+    const { groups } = this.props;
+    const {
+      activeGroupObj: activeGroup,
+      normalizedGroupActivities: groupActivities
+    } = this.state;
     return (
       <NavAside>
         <h3>Welcome, {`${firstname} ${lastname}`}</h3>
@@ -57,19 +144,33 @@ class Navbar extends Component {
           <ChatNavBlock>
             <h3>Groups</h3>
             <ChatNavBlockList>
-              <li>groups item one</li>
+              {groups.length !== 0 && renderList(groups, "title")}
             </ChatNavBlockList>
           </ChatNavBlock>
           <ChatNavBlock>
             <h3>Group Chats</h3>
             <ChatNavBlockList>
-              <li>group chats item one</li>
+              {activeGroup
+                ? groupHasChats(activeGroup) &&
+                  listGroupChats(activeGroup.chats)
+                : null}
             </ChatNavBlockList>
           </ChatNavBlock>
           <ChatNavBlock>
             <h3>Group Members</h3>
             <ChatNavBlockList>
-              <li>group members item one</li>
+              {activeGroup && renderList(activeGroup.members, "username")}
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Direct Chats</h3>
+            <ChatNavBlockList>
+              {groupActivities &&
+                renderIfGroupActivityHasChat(
+                  groupActivities,
+                  activeGroup.uuid,
+                  username
+                )}
             </ChatNavBlockList>
           </ChatNavBlock>
         </ChatNavOptions>
@@ -78,15 +179,36 @@ class Navbar extends Component {
   }
 }
 
-// export default Navbar;
-
 export default compose(
   graphql(getAuthenticatedUser, {
     props: ({ data: { authenticatedUser } }) => ({
       authenticatedUser
     })
+  }),
+  graphql(getGroups, {
+    props: ({ data: { groups } }) => ({
+      groups
+    })
+  }),
+  graphql(getGroupActivities, {
+    props: ({ data: { groupActivities } }) => ({
+      groupActivities
+    })
+  }),
+  graphql(getGroupInvitations, {
+    props: ({ data: { groupInvitations } }) => ({
+      groupInvitations
+    })
   })
 )(Navbar);
+
+// export default compose(
+//   graphql(getAuthenticatedUser, {
+//     props: ({ data: { authenticatedUser } }) => ({
+//       authenticatedUser
+//     })
+//   })
+// )(Navbar);
 
 // const HeresAUser = ({ channelId }) => (
 //   <Subscription

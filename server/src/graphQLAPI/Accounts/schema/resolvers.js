@@ -27,6 +27,7 @@ const resolvers = {
       return await createUser(input);
     },
     loginUser: async (_parentValue, { input }, { req }) => {
+      console.log("LOGGING USER IN");
       return await loginUser(input, req);
     }
   },
