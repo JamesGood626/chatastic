@@ -10,6 +10,7 @@ import { setContext } from "apollo-link-context";
 import { ApolloProvider } from "react-apollo";
 import { getMainDefinition } from "apollo-utilities";
 import gql from "graphql-tag";
+import styled from "styled-components";
 // import getAuthenticatedUser from './graphQL/queries/local/accounts'
 import Main from "./Main";
 import "./reset.css";
@@ -67,7 +68,8 @@ const defaultState = {
   },
   groups: [],
   groupActivities: [],
-  groupInvitations: []
+  groupInvitations: [],
+  activeGroup: null
 };
 
 const cache = new InMemoryCache({

@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import Navbar from "./containers/navbar";
+import Navbar from "./class-components/navbar";
+import Chat from "./class-components/chat";
 
 const Container = styled.div`
   display: flex;
@@ -10,7 +11,7 @@ const chatInterface = () => {
   return (
     <Container>
       <Navbar />
-      <h1>Chat Interface</h1>
+      <Chat />
     </Container>
   );
 };

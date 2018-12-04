@@ -1,5 +1,21 @@
 import gql from "graphql-tag";
 
+const UserSearchInputTypes = gql`
+  input UserSearchInput {
+    username: String!
+  }
+`;
+
+export const GET_USER_BY_USERNAME = gql`
+  mutation getUserByUsernameOp($input: UserSearchInput!) {
+    getUserByUsername(input: $input) {
+      firstname
+      lastname
+      username
+    }
+  }
+`;
+
 const createUserInputTypes = gql`
   input CreateUserInput {
     firstname: String!

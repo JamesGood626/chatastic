@@ -9,6 +9,7 @@
     "apollo-link-ws": "^1.0.9",
     "graphql": "^14.0.2",
     "graphql-tag": "^2.10.0",
+    "gsap": "^2.0.2",
     "react": "^16.6.1",
     "react-apollo": "^2.2.4",
     "react-dom": "^16.6.1",
