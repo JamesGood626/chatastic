@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import TweenMax from "gsap";
 
 const Container = styled.div`
@@ -10,13 +10,6 @@ const Container = styled.div`
   height: 100%;
   background: ${props => props.bgColor === "green" && "#35eb7e"};
   background: ${props => props.bgColor === "white" && "#fcfcfc"};
-  animation-duration: 0.8s;
-  animation-timing-function: ease-in-out;
-  animation-delay: 0s;
-  animation-iteration-count: 1;
-  animation-direction: normal;
-  animation-fill-mode: forwards;
-  animation-play-state: running;
 
   h3 {
     pointer-events: none;
@@ -29,7 +22,8 @@ const Container = styled.div`
 class OptionTab extends Component {
   container = React.createRef();
   state = {
-    offsetLeft: null
+    offsetLeft: null,
+    showController: false
   };
 
   componentDidMount = () => {
@@ -44,17 +38,13 @@ class OptionTab extends Component {
     });
   };
 
-  onMouseOver = e => {
-    const { offsetLeft } = this.state;
-    TweenMax.fromTo(
-      this.container.current,
-      0.4,
-      { left: offsetLeft, width: "25%" },
-      { left: "0px", width: "100%" }
-    );
+  toggleShowController = () => {
+    this.setState((state, props) => ({
+      showController: !state.showController
+    }));
   };
 
-  onMouseOut = e => {
+  animateOut = () => {
     const { offsetLeft } = this.state;
     TweenMax.fromTo(
       this.container.current,
@@ -62,22 +52,60 @@ class OptionTab extends Component {
       { left: "0px", width: "100%" },
       { left: offsetLeft, width: "25%" }
     );
+    TweenMax.set(this.container.current, {
+      position: "static",
+      width: "25%"
+    });
+  };
+
+  onMouseOver = e => {
+    const { showController } = this.state;
+    if (!showController) {
+      const { offsetLeft } = this.state;
+      TweenMax.fromTo(
+        this.container.current,
+        0.4,
+        { left: offsetLeft, width: "25%" },
+        { left: "0px", width: "100%" }
+      );
+      TweenMax.set(this.container.current, {
+        position: "absolute",
+        width: "100%"
+      });
+    }
+  };
+
+  onMouseOut = e => {
+    if (this.state.showController) {
+      return;
+    }
+    this.animateOut();
+  };
+
+  onClick = e => {
+    if (!this.state.showController) {
+      TweenMax.set(this.container.current, { width: "100%" });
+    }
+    if (this.state.showController) {
+      this.animateOut();
+    }
+    this.toggleShowController();
   };
 
   render() {
-    const { onMouseOver, onMouseOut } = this;
-    const { id, children, bgColor } = this.props;
-    const { offsetLeft } = this.state;
+    const { onMouseOver, onMouseOut, onClick } = this;
+    const { children, bgColor } = this.props;
+    const { offsetLeft, showController } = this.state;
     return (
       <Container
-        id={id}
         ref={this.container}
         bgColor={bgColor}
         offsetLeft={offsetLeft}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
+        onClick={!showController ? onClick : null}
       >
-        {children}
+        {children(this.state.showController, onClick)}
       </Container>
     );
   }

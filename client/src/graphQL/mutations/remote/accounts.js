@@ -9,6 +9,7 @@ const UserSearchInputTypes = gql`
 export const GET_USER_BY_USERNAME = gql`
   mutation getUserByUsernameOp($input: UserSearchInput!) {
     getUserByUsername(input: $input) {
+      uuid
       firstname
       lastname
       username
@@ -56,6 +57,8 @@ export const LOGIN_USER = gql`
         uuid
         title
         creator {
+          # Adding this to the mutation request data makes the app crash..
+          # uuid (don't really need this, but why does it fail?)
           username
         }
         chats {

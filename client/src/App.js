@@ -15,10 +15,11 @@ import styled from "styled-components";
 import Main from "./Main";
 import "./reset.css";
 
-const authLink = setContext((request, previousContext) => {
+const authLink = setContext((request, { headers }) => {
   const token = localStorage.getItem("token");
   return {
-    headers: { authorization: `Bearer ${token}` }
+    ...headers,
+    headers: { authorization: token ? `Bearer ${token}` : "" }
   };
 });
 
@@ -74,7 +75,7 @@ const defaultState = {
 
 const cache = new InMemoryCache({
   dataIdFromObject: o => {
-    console.log("dataIfFromObject executing: ", o);
+    //  console.log("dataIfFromObject executing: ", o);
     return o.uuid;
   }
 });
@@ -111,7 +112,7 @@ const stateLink = withClientState({
         const previousState = cache.readQuery({ query });
         console.log("PREVIOUS STATE: ", previousState);
         const data = {
-          ...previousState,
+          // ...previousState,
           authenticatedUser: {
             ...previousState.authenticatedUser,
             firstname,
@@ -126,31 +127,38 @@ const stateLink = withClientState({
         };
         console.log("NEW DATA: ", data);
         cache.writeData({ query, data });
+      },
+      updateGroups: (_, { input }, { cache }) => {
+        // const { firstname, lastname, username, uuid, token, chats } = input;
+        console.log("input for updateGroups: ", input);
+        const query = gql`
+          query getGroups {
+            groups @client {
+              __typename
+              uuid
+              title
+              creator {
+                username
+              }
+              members {
+                username
+              }
+              chats
+            }
+          }
+        `;
+        const previousState = cache.readQuery({ query });
+        console.log("PREVIOUS STATE: ", previousState);
+        const length = previousState.groups.length;
+        console.log("THE LENGTH OF THE PREVIOUS STATE ARRAY: ", length);
+        const newData = length > 0 ? [...previousState.groups, input] : [input];
+        const data = {
+          groups: newData
+        };
+        console.log("NEW DATA: ", data);
+        cache.writeData({ query, data });
+        console.log("DOES DATA GET WRITTEN TO CACHE?");
       }
-      // updateGroups: (_, { input }, { cache }) => {
-      //   // const { firstname, lastname, username, uuid, token, chats } = input;
-      //   console.log("input for updateGroups: ", input);
-      //   const query = gql`
-      //     query getGroups {
-      //       groups @client {
-      //         __typename
-      //         title
-      //       }
-      //     }
-      //   `;
-      //   const previousState = cache.readQuery({ query });
-      //   console.log("PREVIOUS STATE: ", previousState);
-      //   const data = {
-      //     ...previousState,
-      //     groups: {
-      //       ...previousState.groups,
-      //       // title,
-      //       members: [...previousState.groups.members]
-      //     }
-      //   };
-      //   console.log("NEW DATA: ", data);
-      //   cache.writeData({ query, data });
-      // }
     }
   }
 });

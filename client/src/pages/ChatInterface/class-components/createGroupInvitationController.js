@@ -1,29 +1,49 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
+import styled, { keyframes } from "styled-components";
 import { Mutation, graphql, compose } from "react-apollo";
 import CreateGroupInvitationBtn from "../fun-components/createGroupInvitationBtn";
 import { GET_USER_BY_USERNAME } from "../../../graphQL/mutations/remote/accounts";
 
+const animateIn = keyframes`
+  0% {
+    transform: translateX(-100%)
+  }
+  100% {
+    transform: translateX(0%)
+  }
+`;
+
+const Container = styled.div`
+  position: absolute;
+  top: 0;
+  width: 30rem;
+  height: 88vh;
+  background: lime;
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+  animation-name: ${animateIn};
+`;
+
 // set Date.now() for setDate when createGroupInvitation function is invoked.
-export default class createGroupInvitationController extends Component {
+class CreateGroupInvitationController extends PureComponent {
   state = {
     username: "",
     groupUuid: "",
     inviteeUuid: ""
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
-    console.log("HAS STATE UPDATED?");
-  };
-
   updateUsername = e => {
-    console.log("USERNAME IS NOT UPDATING");
     this.setState({
       username: e.target.value
     });
   };
 
   getUserByUsername = GET_USER_BY_USERNAME => {
-    console.log("WHY IS THIS EXECUTING?");
     GET_USER_BY_USERNAME({
       variables: {
         input: { username: this.state.username }
@@ -48,26 +68,39 @@ export default class createGroupInvitationController extends Component {
     });
   };
 
+  update = (cache, { data }) => {
+    console.log("THE DATA IN UPDATE: ", data);
+  };
+
   render() {
     const { username } = this.state;
+    const { onClick } = this.props;
     const {
       updateUsername,
       updateGroupInvitations,
       createGroupInvitation
     } = this;
     return (
-      <Mutation mutation={GET_USER_BY_USERNAME}>
+      <Mutation mutation={GET_USER_BY_USERNAME} update={this.update}>
         {(getUserByUsername, { data, client }) => {
+          if (data) {
+            client.readQuery();
+            client.writeData({ data: { usersToInvite: [] } });
+          }
+          console.log("DATA INSIDE OF THE MUTATION: ", data);
           return (
-            <>
+            <Container>
+              <h4 onClick={onClick}>Close</h4>
               <input type="text" value={username} onChange={updateUsername} />
               <button onClick={() => this.getUserByUsername(getUserByUsername)}>
                 Get User
               </button>
-            </>
+            </Container>
           );
         }}
       </Mutation>
     );
   }
 }
+
+export default CreateGroupInvitationController;

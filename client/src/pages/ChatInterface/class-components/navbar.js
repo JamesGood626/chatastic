@@ -19,10 +19,15 @@ import { getGroupInvitations } from "../../../graphQL/queries/local/groupInvitat
 import AdditionalOptions from "./additionalOptions";
 import MessageList from "./messageList";
 
-const renderList = (data, key) => data.map(item => <li>{item[key]}</li>);
+const renderList = (data, key) =>
+  data.map((item, i) => <li key={`title-${item[key]}-${i}`}>{item[key]}</li>);
 
 const listGroupChats = groupChats =>
-  groupChats.map(chat => <li id={chat.channel}>{chat.title}</li>);
+  groupChats.map(chat => (
+    <li key={chat.channel} id={chat.channel}>
+      {chat.title}
+    </li>
+  ));
 
 const normalizeData = (data, key) => {
   if (data.length === 0) {
@@ -41,7 +46,7 @@ const renderIfGroupActivityHasChat = (groupActivity, uuid, username) => {
   const ga = groupActivity[uuid];
   if (ga.hasOwnProperty("directChats") && ga.directChats[0] !== null) {
     return ga.directChats.map(chat => (
-      <li>
+      <li key={chat.channel} id={chat.channel}>
         {username === chat.senderUsername
           ? chat.recipientUsername
           : chat.senderUsername}
@@ -80,21 +85,28 @@ const ChatNavOptions = styled.div`
   flex-direction: column;
   height: 100%;
   width: 100%;
+  overflow-y: scroll;
   background: yellow;
 `;
 
 const ChatNavBlock = styled.div`
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  justify-content: flex-start;
   padding-left: 2.4rem;
-  min-height: 13.8rem;
-  height: 100%;
+  min-height: 24rem;
+  height: 24rem;
   width: 100%;
   background: blue;
+
+  h3 {
+    margin-bottom: -1rem;
+  }
 `;
 
 const ChatNavBlockList = styled.ul`
+  overflow-y: scroll;
+  height: 18rem;
   background: #d40;
 `;
 
@@ -138,6 +150,12 @@ class Navbar extends Component {
     });
   };
 
+  // NOTE: after creating a group, the mutation to create the group runs and the
+  // local client cache is successfully updated.
+  // HOWEVER... when this component rerenders the groups on this.props is null.
+  // I will need to utilize a query component to retrieve the newly updated groups.
+  // -- Will this conflict with the local state that I created to help keep track
+  // of the activeGroup and also display the corresponding groupActivity info?
   componentDidUpdate = (prevProps, prevState) => {
     console.log("LOADED STATE SET: ", this.state);
   };
@@ -152,6 +170,7 @@ class Navbar extends Component {
       activeGroup,
       normalizedGroupActivities: groupActivities
     } = this.state;
+    console.log("GROUPS AFTER UPDATE? ", groups);
     return (
       <ApolloConsumer>
         {client => {

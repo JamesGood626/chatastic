@@ -1,12 +1,17 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import styled from "styled-components";
 import { Mutation, graphql, compose } from "react-apollo";
 // import { CREATE_GROUP } from "../../../graphQL/mutations/remote/groups";
 // import InputField from "../../sharedComponents/inputField";
-import { updateGroups } from "../../../graphQL/queries/local/groups";
+import { getGroups } from "../../../graphQL/queries/local/groups";
 import OptionTab from "./OptionTab";
 import CreateGroupController from "./createGroupController";
 import CreateGroupInvitationController from "./createGroupInvitationController";
+
+const CG = "create_group";
+const CGC = "create_group_chat";
+const CGI = "create_group_invitation";
+const PGI = "pending_group_invitation";
 
 const Container = styled.div`
   position: relative;
@@ -37,9 +42,14 @@ class additionalOptions extends Component {
     toggleOptions: false
   };
 
-  getOffsetLeft = e => {
-    // console.log("THE TARGET OFFSET LEFT: ", e.target.offsetLeft);
-    return e.target.offsetLeft;
+  // getOffsetLeft = e => {
+  //   // console.log("THE TARGET OFFSET LEFT: ", e.target.offsetLeft);
+  //   return e.target.offsetLeft;
+  // };
+
+  getOptionTabId = e => {
+    console.log("THE E.TARGET.ID: ", e.target.id);
+    return e.target.id;
   };
 
   // invite to group (needs to have search functionality)
@@ -49,19 +59,41 @@ class additionalOptions extends Component {
   // pending invitations
   // The components to render out the groups, chats, and members
   render() {
+    const { getOptionTabId } = this;
     return (
       <Container>
-        <OptionTab bgColor="white" getOffsetLeft={this.getOffsetLeft}>
-          <h3>1</h3>
+        <OptionTab bgColor="white" getOptionTabId={getOptionTabId}>
+          {(showController, onClick) => (
+            <Fragment>
+              <h3>CG</h3>
+              {showController && <CreateGroupController onClick={onClick} />}
+            </Fragment>
+          )}
         </OptionTab>
-        <OptionTab bgColor="green" getOffsetLeft={this.getOffsetLeft}>
-          <h3>2</h3>
+        <OptionTab bgColor="green" getOptionTabId={getOptionTabId}>
+          {(showController, onClick) => (
+            <Fragment>
+              <h3>CGC</h3>
+              {showController && <CreateGroupController onClick={onClick} />}
+            </Fragment>
+          )}
         </OptionTab>
-        <OptionTab bgColor="white" getOffsetLeft={this.getOffsetLeft}>
-          <h3>3</h3>
+        <OptionTab bgColor="white" getOptionTabId={getOptionTabId}>
+          {(showController, onClick) => (
+            <Fragment>
+              <h3>CGI</h3>
+              {showController && (
+                <CreateGroupInvitationController onClick={onClick} />
+              )}
+            </Fragment>
+          )}
         </OptionTab>
-        <OptionTab bgColor="green" getOffsetLeft={this.getOffsetLeft}>
-          <h3>4</h3>
+        <OptionTab bgColor="green" getOptionTabId={getOptionTabId}>
+          {showController => (
+            <Fragment>
+              <h3>PGI</h3>
+            </Fragment>
+          )}
         </OptionTab>
       </Container>
     );
@@ -78,7 +110,7 @@ class additionalOptions extends Component {
 // If this approach doesn't work for updating the group list adtera new one is created then
 // I can opt for refetching queries instead.
 export default compose(
-  graphql(updateGroups, {
+  graphql(getGroups, {
     props: ({ data: { groups } }) => ({
       groups
     })

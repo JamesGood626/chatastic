@@ -1,9 +1,38 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
+import { graphql, compose } from "react-apollo";
+import styled, { keyframes } from "styled-components";
+import { updateGroups } from "../../../graphQL/mutations/local/groups";
 import CreateGroupBtn from "../fun-components/createGroupBtn";
 
-class createGroupController extends Component {
+const animateIn = keyframes`
+  0% {
+    transform: translateX(-100%)
+  }
+  100% {
+    transform: translateX(0%)
+  }
+`;
+
+const Container = styled.div`
+  position: absolute;
+  top: 0;
+  width: 30rem;
+  height: 88vh;
+  background: lime;
+  animation-duration: 0.4s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  animation-fill-mode: forwards;
+  animation-play-state: running;
+  animation-name: ${animateIn};
+`;
+
+class CreateGroupController extends PureComponent {
   state = {
-    title: ""
+    title: "",
+    animateOut: false
   };
 
   updateGroupInputTitle = e => {
@@ -14,14 +43,12 @@ class createGroupController extends Component {
 
   updateGroups = (cache, { data: { createGroup } }) => {
     console.log("GOT THE createGroup data in update: ", createGroup);
-    const { title, members } = createGroup;
     this.props.updateGroups({
-      variables: { input: { title, members } }
+      variables: { input: createGroup }
     });
   };
 
   createGroup = CREATE_GROUP => {
-    console.log("CREATING USER BUTTON ONCLICK");
     CREATE_GROUP({
       variables: {
         input: { title: this.state.title }
@@ -30,17 +57,31 @@ class createGroupController extends Component {
   };
 
   render() {
-    const { title } = this.state;
-    const { updateGroups, createGroup, updateGroupInputTitle } = this;
+    const { title, animateOut } = this.state;
+    // onClick used to close the div
+    const { onClick } = this.props;
+    const {
+      updateGroups,
+      createGroup,
+      updateGroupInputTitle,
+      animateOutAndClose
+    } = this;
     return (
-      <CreateGroupBtn
-        updateGroups={updateGroups}
-        createGroup={createGroup}
-        onChange={updateGroupInputTitle}
-        inputVal={title}
-      />
+      <Container>
+        <h4 onClick={onClick}>Close</h4>
+        <CreateGroupBtn
+          updateGroups={updateGroups}
+          createGroup={createGroup}
+          onChange={updateGroupInputTitle}
+          inputVal={title}
+        />
+      </Container>
     );
   }
 }
 
-export default createGroupController;
+// export default CreateGroupController;
+
+export default compose(graphql(updateGroups, { name: "updateGroups" }))(
+  CreateGroupController
+);
