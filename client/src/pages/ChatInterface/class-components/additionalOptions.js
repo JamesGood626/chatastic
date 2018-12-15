@@ -6,6 +6,7 @@ import { Mutation, graphql, compose } from "react-apollo";
 import { getGroups } from "../../../graphQL/queries/local/groups";
 import OptionTab from "./OptionTab";
 import CreateGroupController from "./createGroupController";
+import CreateGroupChatController from "./createGroupChatController";
 import CreateGroupInvitationController from "./createGroupInvitationController";
 
 const CG = "create_group";
@@ -74,7 +75,9 @@ class additionalOptions extends Component {
           {(showController, onClick) => (
             <Fragment>
               <h3>CGC</h3>
-              {showController && <CreateGroupController onClick={onClick} />}
+              {showController && (
+                <CreateGroupChatController onClick={onClick} />
+              )}
             </Fragment>
           )}
         </OptionTab>

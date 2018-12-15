@@ -7,13 +7,11 @@ import ChatInterface from "./pages/ChatInterface";
 
 export default function Main() {
   return (
-    <main>
-      <Router>
-        <Home path="/" />
-        <Signup path="/signup" />
-        <Login path="/login" />
-        <ChatInterface path="/chat" />
-      </Router>
-    </main>
+    <Router>
+      <Home path="/" />
+      <Signup path="/signup" />
+      <Login path="/login" />
+      <ChatInterface path="/chat" />
+    </Router>
   );
 }

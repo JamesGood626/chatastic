@@ -1,6 +1,7 @@
 import React, { PureComponent } from "react";
 import { graphql, compose } from "react-apollo";
 import styled, { keyframes } from "styled-components";
+import { getGroups } from "../../../graphQL/queries/local/groups";
 import { updateGroups } from "../../../graphQL/mutations/local/groups";
 import CreateGroupBtn from "../fun-components/createGroupBtn";
 
@@ -43,9 +44,14 @@ class CreateGroupController extends PureComponent {
 
   updateGroups = (cache, { data: { createGroup } }) => {
     console.log("GOT THE createGroup data in update: ", createGroup);
-    this.props.updateGroups({
-      variables: { input: createGroup }
-    });
+    const data = cache.readQuery({ query: getGroups });
+    console.log("getGroups data in update: ", data);
+    // Putting the newly created group on a copy of the previous cached groups array.
+    data.groups = [...data.groups, createGroup];
+    cache.writeQuery({ query: getGroups, data });
+    // this.props.updateGroups({
+    //   variables: { input: createGroup }
+    // });
   };
 
   createGroup = CREATE_GROUP => {

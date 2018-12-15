@@ -13,10 +13,12 @@ import gql from "graphql-tag";
 import styled from "styled-components";
 // import getAuthenticatedUser from './graphQL/queries/local/accounts'
 import Main from "./Main";
+import resolvers from "../src/graphQL/resolvers";
 import "./reset.css";
 
 const authLink = setContext((request, { headers }) => {
   const token = localStorage.getItem("token");
+  console.log("TOKEN BEING SET ON THE HEADER: ", token);
   return {
     ...headers,
     headers: { authorization: token ? `Bearer ${token}` : "" }
@@ -70,11 +72,18 @@ const defaultState = {
   groups: [],
   groupActivities: [],
   groupInvitations: [],
-  activeGroup: null
+  activeGroup: null,
+  usersToInvite: []
 };
 
 const cache = new InMemoryCache({
   dataIdFromObject: o => {
+    if (o.__typename === "GroupActivity") {
+      // console.log(
+      //   `o has a typename of GroupActivity: ${o.__typename}_${o.groupUuid}`
+      // );
+      return `${o.__typename}_${o.groupUuid}`;
+    }
     //  console.log("dataIfFromObject executing: ", o);
     return o.uuid;
   }
@@ -83,84 +92,7 @@ const cache = new InMemoryCache({
 const stateLink = withClientState({
   cache,
   defaults: defaultState,
-  resolvers: {
-    Mutation: {
-      updateAuthenticatedUser: (_, { input }, { cache }) => {
-        const {
-          firstname,
-          lastname,
-          username,
-          uuid,
-          token,
-          groups,
-          groupActivities,
-          groupInvitations
-        } = input;
-        console.log("DA input: ", input);
-        const query = gql`
-          query getAuthenticatedUser {
-            authenticatedUser @client {
-              __typename
-              firstname
-              lastname
-              username
-              uuid
-              token
-            }
-          }
-        `;
-        const previousState = cache.readQuery({ query });
-        console.log("PREVIOUS STATE: ", previousState);
-        const data = {
-          // ...previousState,
-          authenticatedUser: {
-            ...previousState.authenticatedUser,
-            firstname,
-            lastname,
-            username,
-            uuid,
-            token
-          },
-          groups: groups[0] !== null ? groups : [],
-          groupActivities: groupActivities[0] !== null ? groupActivities : [],
-          groupInvitations: groupInvitations[0] !== null ? groupInvitations : []
-        };
-        console.log("NEW DATA: ", data);
-        cache.writeData({ query, data });
-      },
-      updateGroups: (_, { input }, { cache }) => {
-        // const { firstname, lastname, username, uuid, token, chats } = input;
-        console.log("input for updateGroups: ", input);
-        const query = gql`
-          query getGroups {
-            groups @client {
-              __typename
-              uuid
-              title
-              creator {
-                username
-              }
-              members {
-                username
-              }
-              chats
-            }
-          }
-        `;
-        const previousState = cache.readQuery({ query });
-        console.log("PREVIOUS STATE: ", previousState);
-        const length = previousState.groups.length;
-        console.log("THE LENGTH OF THE PREVIOUS STATE ARRAY: ", length);
-        const newData = length > 0 ? [...previousState.groups, input] : [input];
-        const data = {
-          groups: newData
-        };
-        console.log("NEW DATA: ", data);
-        cache.writeData({ query, data });
-        console.log("DOES DATA GET WRITTEN TO CACHE?");
-      }
-    }
-  }
+  resolvers
 });
 
 const client = new ApolloClient({

@@ -4,8 +4,8 @@ import gql from "graphql-tag";
 export const getGroups = gql`
   query getGroups {
     groups @client {
-      title
       uuid
+      title
       creator {
         username
       }

@@ -6,17 +6,6 @@ const UserSearchInputTypes = gql`
   }
 `;
 
-export const GET_USER_BY_USERNAME = gql`
-  mutation getUserByUsernameOp($input: UserSearchInput!) {
-    getUserByUsername(input: $input) {
-      uuid
-      firstname
-      lastname
-      username
-    }
-  }
-`;
-
 const createUserInputTypes = gql`
   input CreateUserInput {
     firstname: String!
@@ -29,11 +18,11 @@ const createUserInputTypes = gql`
 export const CREATE_USER = gql`
   mutation createUserOp($input: CreateUserInput!) {
     createUser(input: $input) {
+      uuid
       firstname
       lastname
       username
       token
-      uuid
     }
   }
 `;
@@ -48,11 +37,11 @@ const loginUserInputTypes = gql`
 export const LOGIN_USER = gql`
   mutation loginUserOp($input: LoginUserInput!) {
     loginUser(input: $input) {
+      uuid
       firstname
       lastname
       username
       token
-      uuid
       groups {
         uuid
         title
@@ -92,14 +81,14 @@ export const LOGIN_USER = gql`
           title
         }
         inviter {
+          username
           firstname
           lastname
-          username
         }
         invitee {
+          username
           firstname
           lastname
-          username
         }
       }
     }

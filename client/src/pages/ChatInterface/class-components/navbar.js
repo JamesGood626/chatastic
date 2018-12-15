@@ -19,8 +19,38 @@ import { getGroupInvitations } from "../../../graphQL/queries/local/groupInvitat
 import AdditionalOptions from "./additionalOptions";
 import MessageList from "./messageList";
 
-const renderList = (data, key) =>
-  data.map((item, i) => <li key={`title-${item[key]}-${i}`}>{item[key]}</li>);
+// TESTING USING THIS FRAG FOR RETRIEVING GROUP ACTIVITY VIA THE
+// dataIdFromObject that is returned when initially querying for them from the server.
+const frag = gql`
+  fragment GroupActivityDetails on groupActivities {
+    uuid
+    groupUuid
+    directChats {
+      channel
+      senderUsername
+      recipientUsername
+      messages {
+        text
+        sendDate
+        sender {
+          username
+        }
+      }
+    }
+  }
+`;
+
+// client.readFragment({
+//   id,
+//   fragment: frag
+// });
+
+const renderList = (data, key) => {
+  console.log("WHAT IS RENDER LIST BEING CALLED WITH? ", data);
+  return data.map((item, i) => (
+    <li key={`title-${item[key]}-${i}`}>{item[key]}</li>
+  ));
+};
 
 const listGroupChats = groupChats =>
   groupChats.map(chat => (
@@ -110,141 +140,85 @@ const ChatNavBlockList = styled.ul`
   background: #d40;
 `;
 
+// Will need to use this... or somehting similar in another place.
+// return (
+//   <ApolloConsumer>
+//     {client => {
+//       if (activeGroup) {
+//         client.writeData({ data: { activeGroup } });
+//       }
+//     }}
+//     </ApolloConsumer>
+//   );
+
 // TODO:
 // 1. Get groupInvitations working
 // 2. Test
 // 3. Refactor
 class Navbar extends Component {
-  state = {
-    activeGroup: null,
-    normalizedGroups: null,
-    normalizedGroupActivities: null
-  };
-
   componentDidMount = () => {
-    const { groups, groupActivities } = this.props;
-    if (groups.length > 0) {
-      const normalizedGroups = normalizeData(groups, "uuid");
-      const normalizedGroupActivities = normalizeData(
-        groupActivities,
-        "groupUuid"
-      );
-      this.setLoadedState(
-        groups[0],
-        normalizedGroups,
-        normalizedGroupActivities
-      );
-    }
     console.log("Navbar props: ", this.props);
-    const { token } = this.props.authenticatedUser;
-    if (token) {
-      localStorage.setItem("token", token);
-    }
-  };
-
-  setLoadedState = (group, normalizedGroups, normalizedGroupActivities) => {
-    this.setState({
-      activeGroup: group,
-      normalizedGroups,
-      normalizedGroupActivities
-    });
-  };
-
-  // NOTE: after creating a group, the mutation to create the group runs and the
-  // local client cache is successfully updated.
-  // HOWEVER... when this component rerenders the groups on this.props is null.
-  // I will need to utilize a query component to retrieve the newly updated groups.
-  // -- Will this conflict with the local state that I created to help keep track
-  // of the activeGroup and also display the corresponding groupActivity info?
-  componentDidUpdate = (prevProps, prevState) => {
-    console.log("LOADED STATE SET: ", this.state);
   };
 
   // TODO (refactor):
   // Move ApolloConsumer up One level and pass down client as props
   // to each of the nested components in the main index.js of this folder.
   render() {
-    const { firstname, lastname, username } = this.props.authenticatedUser;
-    const { groups } = this.props;
-    const {
-      activeGroup,
-      normalizedGroupActivities: groupActivities
-    } = this.state;
-    console.log("GROUPS AFTER UPDATE? ", groups);
+    const firstname = "userFirstName";
+    const lastname = "userLastName";
     return (
-      <ApolloConsumer>
-        {client => {
-          if (activeGroup) {
-            client.writeData({ data: { activeGroup } });
-          }
-          return (
-            <NavAside>
-              <h3>Welcome, {`${firstname} ${lastname}`}</h3>
-              <AdditionalOptions />
-              <ChatNavOptions>
-                <ChatNavBlock>
-                  <h3>Groups</h3>
-                  <ChatNavBlockList>
-                    {groups.length !== 0 && renderList(groups, "title")}
-                  </ChatNavBlockList>
-                </ChatNavBlock>
-                <ChatNavBlock>
-                  <h3>Group Chats</h3>
-                  <ChatNavBlockList>
-                    {activeGroup
-                      ? groupHasChats(activeGroup) &&
-                        listGroupChats(activeGroup.chats)
-                      : null}
-                  </ChatNavBlockList>
-                </ChatNavBlock>
-                <ChatNavBlock>
-                  <h3>Group Members</h3>
-                  <ChatNavBlockList>
-                    {activeGroup && renderList(activeGroup.members, "username")}
-                  </ChatNavBlockList>
-                </ChatNavBlock>
-                <ChatNavBlock>
-                  <h3>Direct Chats</h3>
-                  <ChatNavBlockList>
-                    {groupActivities &&
-                      renderIfGroupActivityHasChat(
-                        groupActivities,
-                        activeGroup.uuid,
-                        username
-                      )}
-                  </ChatNavBlockList>
-                </ChatNavBlock>
-              </ChatNavOptions>
-            </NavAside>
-          );
-        }}
-      </ApolloConsumer>
+      <NavAside>
+        <Query query={getAuthenticatedUser}>
+          {({ data, loading, error }) => {
+            console.log("WHY YOU ERROR USER? ", error);
+            console.log("GET AUTH USER DATA: ", data);
+            if (loading) return <h1>Loading...</h1>;
+            if (error) return <h1>ERR</h1>;
+            const { firstname, lastname } = data.getAuthenticatedUser;
+            return <h3>Welcome, {`${firstname} ${lastname}`}</h3>;
+          }}
+        </Query>
+        <AdditionalOptions />
+        <ChatNavOptions>
+          <ChatNavBlock>
+            <h3>Groups</h3>
+            <ChatNavBlockList>
+              <Query query={getGroups}>
+                {({ data, loading, error }) => {
+                  console.log("GET GROUPS ERR: ", error);
+                  console.log("GET GROUPS DATA: ", data);
+                  if (loading) return <h1>Loading...</h1>;
+                  if (error) return <h1>ERR</h1>;
+                  return renderList(data.groups, "title");
+                }}
+              </Query>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Group Chats</h3>
+            <ChatNavBlockList>
+              <h1>Group Chats go here</h1>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Group Members</h3>
+            <ChatNavBlockList>
+              <h1>Group Members go here</h1>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+          <ChatNavBlock>
+            <h3>Direct Chats</h3>
+            <ChatNavBlockList>
+              <h1>Direct Chatsgo here</h1>
+            </ChatNavBlockList>
+          </ChatNavBlock>
+        </ChatNavOptions>
+      </NavAside>
     );
   }
 }
 
-export default compose(
-  graphql(getAuthenticatedUser, {
-    props: ({ data: { authenticatedUser } }) => ({
-      authenticatedUser
-    })
-  }),
-  graphql(getGroups, {
-    props: ({ data: { groups } }) => ({
-      groups
-    })
-  }),
-  graphql(getGroupActivities, {
-    props: ({ data: { groupActivities } }) => ({
-      groupActivities
-    })
-  }),
-  graphql(getGroupInvitations, {
-    props: ({ data: { groupInvitations } }) => ({
-      groupInvitations
-    })
-  })
-)(Navbar);
+export default Navbar;
 
 // export default compose(
 //   graphql(getAuthenticatedUser, {
