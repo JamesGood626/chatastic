@@ -11,15 +11,7 @@ const {
 // TODO: Fix test cases to make a mutation for getUserByUsername
 // had to switch it from a query to a mutation for the clientside.
 const resolvers = {
-  Query: {},
-  Mutation: {
-    createUser: async (_parentValue, { input }, _context) => {
-      return await createUser(input);
-    },
-    loginUser: async (_parentValue, { input }, { req }) => {
-      console.log("LOGGING USER IN");
-      return await loginUser(input, req);
-    },
+  Query: {
     getUserByUsername: async (
       _parentValue,
       { input: { username } },
@@ -30,6 +22,15 @@ const resolvers = {
         authorization,
         authorizeRequest
       );
+    }
+  },
+  Mutation: {
+    createUser: async (_parentValue, { input }, _context) => {
+      return await createUser(input);
+    },
+    loginUser: async (_parentValue, { input }, { req }) => {
+      console.log("LOGGING USER IN");
+      return await loginUser(input, req);
     }
   },
   Subscription: {

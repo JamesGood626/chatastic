@@ -1,8 +1,19 @@
 import React, { PureComponent } from "react";
 import styled, { keyframes } from "styled-components";
-import { Mutation, graphql, compose } from "react-apollo";
+import { ApolloConsumer, graphql, compose } from "react-apollo";
 import CreateGroupInvitationBtn from "../fun-components/createGroupInvitationBtn";
-import { GET_USER_BY_USERNAME } from "../../../graphQL/mutations/remote/accounts";
+import { GET_USER_BY_USERNAME } from "../../../graphQL/queries/remote/accounts";
+import gql from "graphql-tag";
+
+const getUsersToInviteArr = gql`
+  query getUsersToInviteArr {
+    usersToInvite @client {
+      __typename
+      uuid
+      username
+    }
+  }
+`;
 
 const animateIn = keyframes`
   0% {
@@ -43,12 +54,21 @@ class CreateGroupInvitationController extends PureComponent {
     });
   };
 
-  getUserByUsername = GET_USER_BY_USERNAME => {
-    GET_USER_BY_USERNAME({
+  getUserByUsername = async client => {
+    const { data } = await client.query({
+      query: GET_USER_BY_USERNAME,
       variables: {
         input: { username: this.state.username }
       }
     });
+    const response = client.readQuery({ query: getUsersToInviteArr });
+    // console.log("THE RESULT OF Retrieving the list: ", response.usersToInvite);
+    client.writeData({
+      data: {
+        usersToInvite: [...response.usersToInvite, data.getUserByUsername]
+      }
+    });
+    // console.log("THE RESULT IN GET USER BY USERNAME METHOD: ", data);
   };
 
   updateGroupInvitations = (cache, { data: { createGroup } }) => {
@@ -81,24 +101,26 @@ class CreateGroupInvitationController extends PureComponent {
       createGroupInvitation
     } = this;
     return (
-      <Mutation mutation={GET_USER_BY_USERNAME} update={this.update}>
-        {(getUserByUsername, { data, client }) => {
-          if (data) {
-            client.readQuery();
-            client.writeData({ data: { usersToInvite: [] } });
-          }
-          console.log("DATA INSIDE OF THE MUTATION: ", data);
+      // Create a nested component which will query for the list of users to inviteeUuid
+      // and which will have a button that will send a mutation to actually create the invitation
+      <ApolloConsumer>
+        {client => {
+          // if (data) {
+          //   client.readQuery();
+          //   client.writeData({ data: { usersToInvite: [] } });
+          // }
           return (
             <Container>
-              <h4 onClick={onClick}>Close</h4>
+              <span onClick={onClick}>Close</span>
+              <h3>Get User By Username</h3>
               <input type="text" value={username} onChange={updateUsername} />
-              <button onClick={() => this.getUserByUsername(getUserByUsername)}>
+              <button onClick={() => this.getUserByUsername(client)}>
                 Get User
               </button>
             </Container>
           );
         }}
-      </Mutation>
+      </ApolloConsumer>
     );
   }
 }

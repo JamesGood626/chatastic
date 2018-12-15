@@ -9,15 +9,17 @@ const createGroupInput = gql`
 export const CREATE_GROUP = gql`
   mutation createGroupOp($input: CreateGroupInput!) {
     createGroup(input: $input) {
-      id
       uuid
       title
       members {
         username
       }
       creator {
-        uuid
         username
+      }
+      chats {
+        channel
+        title
       }
     }
   }

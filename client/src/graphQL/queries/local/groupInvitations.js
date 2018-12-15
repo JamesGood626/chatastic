@@ -9,14 +9,14 @@ export const getGroupInvitations = gql`
         title
       }
       inviter {
+        username
         firstname
         lastname
-        username
       }
       invitee {
+        username
         firstname
         lastname
-        username
       }
     }
   }
