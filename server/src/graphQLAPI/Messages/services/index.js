@@ -2,7 +2,7 @@ const Message = require("../model/message");
 const authorizeRequest = require("../../authorization");
 const { getChatByChannel } = require("../../Chats/services");
 
-const createMessage = input => {
+const createMessage = (input, chat) => {
   return new Promise(async (resolve, reject) => {
     const message = new Message(input);
     try {
@@ -18,11 +18,13 @@ const createMessage = input => {
 // Refactor
 const createMessageIfAuthorized = async (input, authorization) => {
   let createdMessage;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
-    messageInput.sender = userId;
+    const length = chat.messages.length;
+    messageInput.count = length + 1;
+    messageInput.senderUsername = username;
     messageInput.channel = chatChannel;
     createdMessage = await createMessage(messageInput);
     chat.messages = [...chat.messages, createdMessage];

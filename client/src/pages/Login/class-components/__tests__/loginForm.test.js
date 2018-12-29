@@ -12,7 +12,7 @@ import "jest-dom/extend-expect";
 import { LOGIN_USER } from "../../../../graphQL/mutations/remote/accounts";
 import Login from "../../index";
 import LoginForm from "../LoginForm";
-import client from "../../../../graphQL/schema/mockSchema";
+import client from "../../../../graphQL/schema/mockClient";
 
 afterEach(cleanup);
 
@@ -40,6 +40,12 @@ afterEach(cleanup);
 //   }
 // ];
 
+// Link below will be good for when I want to get into testing the
+// Redirect behavior.
+// https://spectrum.chat/react-testing-library/general/testing-reach-router~d5a5feae-3193-492e-9405-d1e2204aa0cc
+// NOTE: Will need to actually test this later. i.e. obtain the inputs via testId
+//        and enter in the username and password. Right now I just have these set on state
+//        for ease of development.
 it("renders without error", () => {
   const { debug, getByTestId } = render(
     <ApolloProvider client={client}>
@@ -51,41 +57,3 @@ it("renders without error", () => {
   // fireEvent.click(submitBtn);
   // debug();
 });
-
-// it("renders without error", () => {
-//   const { debug, getByTestId } = render(
-//     <MockedProvider mocks={mocks} addTypename={false}>
-//       <LoginForm />
-//     </MockedProvider>
-//   );
-//   const submitBtn = getByTestId("login-submit-btn");
-//   // fireEvent.click(submitBtn);
-//   // debug();
-// });
-
-// Mocked provider github repo link:
-// https://github.com/apollographql/react-apollo/blob/master/src/test-utils.tsx
-
-// Not the error message for this test -- but I get something along the lines
-// of this.
-// UnhandledPromiseRejectionWarning: Error: No more mocked responses for the query: mutation createGroupOp($input: CreateGroupInput!) {
-//   createGroup(input: $input) {
-//     uuid
-//     title
-//     members {      username
-//     }
-//     creator {
-//       username
-//     }
-//     chats {
-//       channel
-//       title
-//     }
-
-// In this repo file for apollo client (MockedLink) <- used by MockedProvider:
-// https://github.com/apollographql/react-apollo/blob/master/src/test-links.ts
-
-// Line 69 is responsible for the error I'm seeing.
-// When I get more screen real estate, copy paste in the source code and import
-// it into this file, that way I can do a ish ton of console logging to debug this...
-// or use the debugger

@@ -56,7 +56,6 @@ const acceptGroupInvitation = async (input, userId) => {
   await user.save();
   await inviter.save();
   await group.save();
-  console.log("THE SAVED USER: ", user);
   return group;
 };
 

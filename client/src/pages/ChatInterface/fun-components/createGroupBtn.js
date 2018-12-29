@@ -39,6 +39,7 @@ const createGroupButton = ({
       // refetchQueries={[{ query: getGroups }]}
     >
       {(CREATE_GROUP, { data, client }) => {
+        console.log("data: ", data);
         return (
           <Container>
             <input type="text" value={inputVal} onChange={onChange} />
@@ -46,6 +47,7 @@ const createGroupButton = ({
               data-testid="create-group-submit-btn"
               onClick={e => {
                 e.preventDefault();
+                console.log("CREATE_GROUP IN THE ONCLICK: ", CREATE_GROUP);
                 createGroup(CREATE_GROUP);
               }}
             >

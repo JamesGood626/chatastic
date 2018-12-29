@@ -7,15 +7,16 @@ const groupSchema = new Schema({
     required: true
   },
   title: {
-    type: String
+    type: String,
+    required: true
   },
   createdAt: {
     type: Date,
     default: Date.now()
   },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User"
+  creatorUsername: {
+    type: String,
+    required: true
   },
   chats: [
     {

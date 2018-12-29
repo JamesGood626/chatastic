@@ -20,9 +20,10 @@ const resolvers = {
     // deleteGroup
   },
   Group: {
-    creator: async ({ creator }, _args, _context) => {
-      return await getUserById(creator);
-    },
+    // Removed in 12/15/18 refactor.
+    // creator: async ({ creator }, _args, _context) => {
+    //   return await getUserById(creator);
+    // },
     chats: async ({ chats }, _args, _context) => {
       return await retrieveChatsList(chats);
     },

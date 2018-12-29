@@ -6,7 +6,8 @@ const MessageTypeDef = gql`
     channel: String!
     text: String!
     sentDate: Date!
-    sender: User!
+    senderUsername: String!
+    count: Int!
   }
 
   input createMessageInput {

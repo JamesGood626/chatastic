@@ -45,11 +45,7 @@ export const LOGIN_USER = gql`
       groups {
         uuid
         title
-        creator {
-          # Adding this to the mutation request data makes the app crash..
-          # uuid (don't really need this, but why does it fail?)
-          username
-        }
+        creatorUsername
         chats {
           channel
           title
@@ -69,9 +65,7 @@ export const LOGIN_USER = gql`
           messages {
             text
             sentDate
-            sender {
-              username
-            }
+            senderUsername
           }
         }
       }

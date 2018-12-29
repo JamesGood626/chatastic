@@ -64,9 +64,8 @@ const createMessageMutation = `mutation createMessageInExistingChatOp($input: cr
                                 createMessageInExistingChat(input: $input) {
                                   channel
                                   text
-                                  sender {
-                                    firstname
-                                  }
+                                  senderUsername
+                                  count
                                 }
                               }`;
 
@@ -136,28 +135,29 @@ describe("With Message resources a user may", () => {
     );
     // Starting to create messages in the group chat
     messageOne.chatChannel = channel;
-    const { text: messageOneText } = await createMessageGraphQLRequest(
+    const {
+      text: messageOneText,
+      count: messageOneCount
+    } = await createMessageGraphQLRequest(
       createdRequest,
       token,
-      messageOne
+      messageOne,
+      true
     );
     messageTwo.chatChannel = channel;
-    const { text: messageTwoText } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageTwo
-    );
+    const {
+      text: messageTwoText,
+      count: messageTwoCount
+    } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     expect(messageOneText).toBe("This is a message.");
+    expect(messageOneCount).toBe(1);
     expect(messageTwoText).toBe("This is a followup message.");
-    //
+    expect(messageTwoCount).toBe(2);
+
     const getGroupInput = {
       groupUuid: uuid
     };
-    const { chats } = await getGroupGQLRequest(
-      createdRequest,
-      getGroupInput,
-      true
-    );
+    const { chats } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(chats[0].messages.length).toBe(2);
     done();
   });

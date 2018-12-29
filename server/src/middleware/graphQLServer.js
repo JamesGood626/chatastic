@@ -34,6 +34,7 @@ const typeDefs = [
   messageTypeDefs,
   dateScalarSchema
 ];
+
 const resolvers = [
   userResolvers,
   groupResolvers,

@@ -41,9 +41,7 @@ const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
         messages {
           text
           sentDate
-          sender {
-            username
-          }
+          senderUsername
         }
       }
     }

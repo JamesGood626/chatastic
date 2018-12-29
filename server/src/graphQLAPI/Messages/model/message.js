@@ -11,13 +11,16 @@ const messageSchema = new Schema({
     required: true
   },
   sentDate: {
-    type: Date
-    // required: true
-  },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+    type: Date,
     required: true
+  },
+  senderUsername: {
+    type: String
+  },
+  count: {
+    type: Number,
+    required: true,
+    default: 1
   }
 });
 

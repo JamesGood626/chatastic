@@ -7,9 +7,9 @@ const GroupTypeDef = gql`
     uuid: String!
     title: String!
     createdAt: Date!
-    creator: User!
+    creatorUsername: String!
     chats: [Chat]
-    members: [User!]!
+    members: [GroupMember!]!
   }
 
   input CreateGroupInput {

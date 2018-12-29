@@ -84,9 +84,9 @@ class Login extends Component {
     // is what my components that I mapped out in my notes will need
     // to fulfill their tasks!
     console.log("GOT THE loginUser data in update: ", loginUser);
-    // this.props.updateAuthenticatedUser({
-    //   variables: { input: loginUser }
-    // });
+    this.props.updateAuthenticatedUser({
+      variables: { input: loginUser }
+    });
     console.log("WTF?");
   };
 
@@ -97,7 +97,7 @@ class Login extends Component {
           console.log("ANYTHING?! ", data);
           if (data) {
             console.log("Hitting redirect");
-            return <Redirect to="/chat" />;
+            return <Redirect to="/chat" noThrow />;
           }
           return (
             <div>

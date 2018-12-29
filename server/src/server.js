@@ -1,6 +1,6 @@
 const { httpServer, apolloServer } = require("./app");
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 
 httpServer.listen({ port: PORT }, () => {
   console.log(

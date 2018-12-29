@@ -31,11 +31,11 @@ const createGroup = input => {
   });
 };
 
-const assignCreatorAndCreateGroup = async (userId, input) => {
+const assignCreatorAndCreateGroup = async (userId, username, input) => {
   let createdGroup;
   let user;
   if (userId && input) {
-    input.creator = userId;
+    input.creatorUsername = username;
     input.uuid = uuidv1() + uuidv4();
     input.members = [userId];
     user = await getUserById(userId);
@@ -53,9 +53,9 @@ const assignCreatorAndCreateGroup = async (userId, input) => {
 
 const createGroupIfAuthorized = async (input, authorization) => {
   let createdGroup;
-  const { userId, errors } = await authorizeRequest(authorization);
-  if (userId) {
-    createdGroup = await assignCreatorAndCreateGroup(userId, input);
+  const { userId, username, errors } = await authorizeRequest(authorization);
+  if ((userId, username)) {
+    createdGroup = await assignCreatorAndCreateGroup(userId, username, input);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);

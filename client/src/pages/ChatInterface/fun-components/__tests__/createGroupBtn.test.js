@@ -11,7 +11,7 @@ import {
 import "jest-dom/extend-expect";
 import { CREATE_GROUP } from "../../../../graphQL/mutations/remote/groups";
 import CreateGroupBtn from "../createGroupBtn";
-import client from "../../../../graphQL/schema/mockSchema";
+import client from "../../../../graphQL/schema/mockClient";
 
 afterEach(cleanup);
 
@@ -29,7 +29,7 @@ const createGroup = CREATE_GROUP => {
 // It is kind of odd to have to test in this function... but there's really no other good option.
 const updateGroups = (cache, { data: { createGroup } }) => {
   console.log("GOT THE createGroup data in update: ", createGroup);
-  expect(createGroup.creator.username).toBe("Jim");
+  expect(createGroup.creatorUsername).toBe("Jim");
   // The cache is available at this point....
   // console.log("IS THERE CACHE??? ", cache);
 };
