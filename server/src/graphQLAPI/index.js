@@ -6,6 +6,7 @@ const queryTypeDef = gql`
   type Query {
     getGroup(input: GetGroupInput): Group
     getUserByUsername(input: UserSearchInput!): UserSearchResult
+    retrieveMessagesByChatChannel(input: RetrieveMessagesInput): [Message]
   }
 
   type Mutation {

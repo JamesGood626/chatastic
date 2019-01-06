@@ -25,6 +25,7 @@ const resolvers = {
     //   return await getUserById(creator);
     // },
     chats: async ({ chats }, _args, _context) => {
+      console.log("THESE ARE THE ARGS YOU'RE IGNORING BUT MIGHT NEED: ", _args);
       return await retrieveChatsList(chats);
     },
     members: async ({ members }, _args, _context) => {

@@ -20,6 +20,12 @@ const MessageTypeDef = gql`
     sentDate: Date!
     chatChannel: String!
   }
+
+  input RetrieveMessagesInput {
+    start: Int!
+    end: Int!
+    chatChannel: String!
+  }
 `;
 
 module.exports = MessageTypeDef;

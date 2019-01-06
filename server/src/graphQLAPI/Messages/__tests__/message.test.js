@@ -8,6 +8,9 @@ const Chat = require("../../Chats/model/chat");
 const Message = require("../model/message");
 const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
+  getMessagesByChatChannelGQLRequest
+} = require("../../testHelpers/messageRequest");
+const {
   createGroupGQLRequest,
   getGroupGQLRequest
 } = require("../../testHelpers/groupsRequest");
@@ -159,6 +162,20 @@ describe("With Message resources a user may", () => {
     };
     const { chats } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(chats[0].messages.length).toBe(2);
+
+    // THE TEST OF PAGINATION
+    const getMessagesInput = {
+      start: 1,
+      end: 20,
+      chatChannel: channel
+    };
+    const { messageList } = await getMessagesByChatChannelGQLRequest(
+      createdRequest,
+      token,
+      getMessagesInput,
+      true
+    );
+    console.log("THE MESSAGE LIST YOU NEED: ", messageList);
     done();
   });
 

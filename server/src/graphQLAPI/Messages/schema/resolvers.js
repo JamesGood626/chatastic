@@ -1,9 +1,25 @@
 const { pubsub, withFilter } = require("../../pubsub");
-const { createMessageIfAuthorized } = require("../services");
+const {
+  createMessageIfAuthorized,
+  retrieveMessagesIfAuthorized
+} = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
 const resolvers = {
-  Query: {},
+  Query: {
+    retrieveMessagesByChatChannel: async (
+      _parentValue,
+      { input },
+      { headers: { authorization } }
+    ) => {
+      const retrievedMessages = await retrieveMessagesIfAuthorized(
+        input,
+        authorization
+      );
+      console.log("THE RESOLVER IS BEING HIT", retrievedMessages);
+      return retrievedMessages;
+    }
+  },
   Mutation: {
     createMessageInExistingChat: async (
       _parentValue,

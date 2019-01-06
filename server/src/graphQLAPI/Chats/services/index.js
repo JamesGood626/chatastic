@@ -176,6 +176,15 @@ const createGroupChatIfAuthorized = async (input, authorization) => {
   return createdChat;
 };
 
+// !! For facilitating infinite scroll !!
+// This is the function that is called for the initial groups/groupActivities retrieval
+// Need to obtain the list in DESC order and limit it to 20 or 25 messages in each chat.message array.
+// How is this best accomplished in mongo?
+
+// THEN for subsequent scroll ups, you'll need to create a new graphQL query to retrieve new messages
+// for a particular chat, from the last count that is in the array currently.
+// So for a chat with 100 messages, first in the list will be 100 -> and the last will be 80, so we fetch from
+// 80 to 60 for the next page.
 const retrieveChatsList = async chatIdArr => {
   if (chatIdArr.length > 1) {
     return await Chat.find({ _id: { $in: chatIdArr } });

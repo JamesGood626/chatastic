@@ -34,6 +34,11 @@ const loginUserInputTypes = gql`
   }
 `;
 
+// Removed the retrieval of messages in this query
+// Will instead opt to retrieveChatMessagesByChannel(start: Int!, end: Int!)
+// This will require maintaining the start and end that has been retrieved for each channel's
+// messages in order to prevent refetching messages already in the cache.
+// The message mongo model does have the chat channel on it, so you can query by this.
 export const LOGIN_USER = gql`
   mutation loginUserOp($input: LoginUserInput!) {
     loginUser(input: $input) {
@@ -62,11 +67,6 @@ export const LOGIN_USER = gql`
           channel
           senderUsername
           recipientUsername
-          messages {
-            text
-            sentDate
-            senderUsername
-          }
         }
       }
       groupInvitations {
