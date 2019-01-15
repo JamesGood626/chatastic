@@ -1,9 +1,25 @@
 const { pubsub, withFilter } = require("../../pubsub");
-const { createMessageIfAuthorized } = require("../services");
+const {
+  createMessageIfAuthorized,
+  retrieveMessagesIfAuthorized
+} = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
 const resolvers = {
-  Query: {},
+  Query: {
+    retrieveMessagesByChatChannel: async (
+      _parentValue,
+      { input },
+      { headers: { authorization } }
+    ) => {
+      const retrievedMessages = await retrieveMessagesIfAuthorized(
+        input,
+        authorization
+      );
+      console.log("THE RESOLVER IS BEING HIT", retrievedMessages);
+      return retrievedMessages;
+    }
+  },
   Mutation: {
     createMessageInExistingChat: async (
       _parentValue,
@@ -14,20 +30,19 @@ const resolvers = {
         input,
         authorization
       );
-      console.log("THE CREATED MESSAGE BACK IN RESOLVER: ", createdMessage);
       // pubsub.publish("MessageCreated", {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
       return createdMessage;
     }
-  },
-  Message: {
-    sender: async ({ sender }, _args, _context) => {
-      console.log("THE SENDER IN MESSAGE SENDER RESOLVER: ", sender);
-      return await getUserById(sender);
-    }
   }
+  // Message: {
+  // sender: async ({ sender }, _args, _context) => {
+  //   console.log("THE SENDER IN MESSAGE SENDER RESOLVER: ", sender);
+  //   return await getUserById(sender);
+  // }
+  // }
   // Subscription: {
   //   messageCreated: {
   //     subscribe: withFilter(

@@ -9,19 +9,14 @@ const { gql } = require("apollo-server-express");
 //    it is created for.
 
 const UserTypeDef = gql`
-  type User {
-    id: String!
+  interface User {
     uuid: String!
     firstname: String!
     lastname: String!
     username: String!
-    password: String!
-    groups: [Group]
-    groupActivities: [GroupActivity]
-    groupInvitations: [GroupInvitation]
   }
 
-  type Authenticated {
+  type AuthenticatedUser implements User {
     uuid: String!
     firstname: String!
     lastname: String!
@@ -30,6 +25,27 @@ const UserTypeDef = gql`
     groups: [Group]
     groupActivities: [GroupActivity]
     groupInvitations: [GroupInvitation]
+  }
+
+  type GroupMember {
+    uuid: String!
+    firstname: String!
+    lastname: String!
+    username: String!
+  }
+
+  type Inviter {
+    uuid: String!
+    firstname: String!
+    lastname: String!
+    username: String!
+  }
+
+  type Invitee {
+    uuid: String!
+    firstname: String!
+    lastname: String!
+    username: String!
   }
 
   type UserSearchResult {

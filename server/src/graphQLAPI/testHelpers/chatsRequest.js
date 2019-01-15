@@ -22,11 +22,7 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
     messages {
       text
       sentDate
-      sender {
-        uuid
-        firstname
-        lastname
-      }
+      senderUsername
     }
   }
 }`;

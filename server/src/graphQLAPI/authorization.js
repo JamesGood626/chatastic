@@ -43,7 +43,8 @@ const authorizeRequest = async authorization => {
     errors.expiredTokenError =
       e.message === TOKEN_EXPIRED_MESSAGE ? TOKEN_EXPIRED_MESSAGE : null;
   }
-  return { userId: user._id, errors };
+  const { _id, username } = user;
+  return { userId: _id, username, errors };
 };
 
 module.exports = authorizeRequest;

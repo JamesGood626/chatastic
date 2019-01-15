@@ -11,16 +11,7 @@ export const CREATE_GROUP = gql`
     createGroup(input: $input) {
       uuid
       title
-      members {
-        username
-      }
-      creator {
-        username
-      }
-      chats {
-        channel
-        title
-      }
+      creatorUsername
     }
   }
 `;

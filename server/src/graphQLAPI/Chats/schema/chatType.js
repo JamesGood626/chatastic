@@ -9,7 +9,7 @@ const ChatTypeDef = gql`
     channel: String!
     title: String
     createdAt: Date!
-    creator: User
+    creatorUsername: String!
     senderUsername: String!
     recipientUsername: String!
     messages: [Message]

@@ -55,6 +55,7 @@ class CreateGroupController extends PureComponent {
   };
 
   createGroup = CREATE_GROUP => {
+    console.log("CREATING GROUP: ", this.state.title);
     CREATE_GROUP({
       variables: {
         input: { title: this.state.title }

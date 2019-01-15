@@ -9,8 +9,8 @@ const GroupInvitationTypeDef = gql`
     uuid: String!
     sentDate: Date!
     group: Group!
-    inviter: User!
-    invitee: User!
+    inviter: Inviter!
+    invitee: Invitee!
   }
 
   type AcceptedStatus {

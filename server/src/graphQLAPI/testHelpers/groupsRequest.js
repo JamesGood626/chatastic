@@ -18,16 +18,7 @@ const createGroupMutation = `mutation createGroupOp($input: CreateGroupInput!) {
     id
     uuid
     title
-    creator {
-      uuid
-      username
-      groups {
-        title
-      }
-      groupActivities {
-        groupUuid
-      }
-    }
+    creatorUsername
   }
 }`;
 

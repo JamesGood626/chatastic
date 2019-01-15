@@ -8,6 +8,9 @@ const Chat = require("../../Chats/model/chat");
 const Message = require("../model/message");
 const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
+  getMessagesByChatChannelGQLRequest
+} = require("../../testHelpers/messageRequest");
+const {
   createGroupGQLRequest,
   getGroupGQLRequest
 } = require("../../testHelpers/groupsRequest");
@@ -64,9 +67,8 @@ const createMessageMutation = `mutation createMessageInExistingChatOp($input: cr
                                 createMessageInExistingChat(input: $input) {
                                   channel
                                   text
-                                  sender {
-                                    firstname
-                                  }
+                                  senderUsername
+                                  count
                                 }
                               }`;
 
@@ -136,29 +138,44 @@ describe("With Message resources a user may", () => {
     );
     // Starting to create messages in the group chat
     messageOne.chatChannel = channel;
-    const { text: messageOneText } = await createMessageGraphQLRequest(
+    const {
+      text: messageOneText,
+      count: messageOneCount
+    } = await createMessageGraphQLRequest(
       createdRequest,
       token,
-      messageOne
+      messageOne,
+      true
     );
     messageTwo.chatChannel = channel;
-    const { text: messageTwoText } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageTwo
-    );
+    const {
+      text: messageTwoText,
+      count: messageTwoCount
+    } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     expect(messageOneText).toBe("This is a message.");
+    expect(messageOneCount).toBe(1);
     expect(messageTwoText).toBe("This is a followup message.");
-    //
+    expect(messageTwoCount).toBe(2);
+
     const getGroupInput = {
       groupUuid: uuid
     };
-    const { chats } = await getGroupGQLRequest(
+    const { chats } = await getGroupGQLRequest(createdRequest, getGroupInput);
+    expect(chats[0].messages.length).toBe(2);
+
+    // THE TEST OF PAGINATION
+    const getMessagesInput = {
+      start: 1,
+      end: 20,
+      chatChannel: channel
+    };
+    const { messageList } = await getMessagesByChatChannelGQLRequest(
       createdRequest,
-      getGroupInput,
+      token,
+      getMessagesInput,
       true
     );
-    expect(chats[0].messages.length).toBe(2);
+    console.log("THE MESSAGE LIST YOU NEED: ", messageList);
     done();
   });
 

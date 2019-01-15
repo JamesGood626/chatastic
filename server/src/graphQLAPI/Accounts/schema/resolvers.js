@@ -29,7 +29,6 @@ const resolvers = {
       return await createUser(input);
     },
     loginUser: async (_parentValue, { input }, { req }) => {
-      console.log("LOGGING USER IN");
       return await loginUser(input, req);
     }
   },
@@ -38,23 +37,22 @@ const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator("userCreated"),
         (payload, variables) => {
-          console.log("SUBSCRIBIN");
           return payload.channelId === variables.channelId;
         }
       )
     }
   },
   // SubResolvers
-  User: {
-    groups,
-    groupActivities,
-    groupInvitations
-  },
-  Authenticated: {
+  AuthenticatedUser: {
     groups,
     groupActivities,
     groupInvitations
   }
+  // Authenticated: {
+  //   groups,
+  //   groupActivities,
+  //   groupInvitations
+  // }
 };
 
 module.exports = resolvers;

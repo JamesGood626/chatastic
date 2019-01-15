@@ -5,9 +5,7 @@ export const updateGroups = gql`
     updateGroups(input: $input) @client {
       uuid
       title
-      creator {
-        username
-      }
+      creatorUsername
       members {
         username
       }

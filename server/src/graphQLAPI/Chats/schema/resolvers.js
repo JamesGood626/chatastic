@@ -41,9 +41,10 @@ const resolvers = {
     }
   },
   Chat: {
-    creator: async ({ user }, _args, _context) => {
-      return await getUserById(user);
-    },
+    // Removed in 12/15/18 refactor.
+    // creator: async ({ user }, _args, _context) => {
+    //   return await getUserById(user);
+    // },
     messages: async ({ messages }, _args, _context) => {
       return await retrieveMessageList(messages);
     }

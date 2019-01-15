@@ -48,15 +48,11 @@ const chatCreationTestFixtureSetup = async (createdRequest, input) => {
 
 const getDirectChatTestables = async username => {
   const user = await getUserByUsername(username);
-  console.log("got the user: ", user);
   const groupActivities = await retrieveGroupActivitiesList(
     user.groupActivities
   );
-  console.log("got the groupActivities: ", groupActivities);
   const directChats = await retrieveChatsList(groupActivities[0].directChats);
-  console.log("got the directChats: ", directChats);
   const messages = await retrieveMessageList(directChats[0].messages);
-  console.log("got the messages: ", messages);
   return { groupActivities, directChats, messages };
 };
 

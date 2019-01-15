@@ -31,11 +31,11 @@ const createDirectChat = (input, messageId) => {
   });
 };
 
-const createGroupChat = (input, userId) => {
+const createGroupChat = (input, userId, username) => {
   return new Promise(async (resolve, reject) => {
     const channel = uuidv1() + uuidv4();
     input.channel = channel;
-    input.creator = userId;
+    input.creatorUsername = username;
     const { groupUuid, ...chatInput } = input;
     const chat = new Chat(chatInput);
     const group = await getGroupByUuid(groupUuid);
@@ -56,6 +56,7 @@ const createMessageAndChat = async input => {
   const channel = uuidv1() + uuidv4();
   // Necessary for subscriptions
   messageInput.channel = channel;
+  // messageInput.count = 1;
   chatInput.channel = channel;
   // chatInput.senderUuid = messageInput.senderUuid;
   // chatInput.recipientUuid = messageInput.recipientUuid;
@@ -144,7 +145,7 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
   let createdChat;
   const { userId, errors } = await authorizeRequest(authorization);
   if (userId) {
-    input.messageInput.sender = userId;
+    input.messageInput.senderUsername = input.senderUsername;
     // Need message so that the user(sender) updated with the newly created chat
     // may be placed on the message as sender
     createdChat = await createMessageAndChat(input);
@@ -162,9 +163,9 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
 
 const createGroupChatIfAuthorized = async (input, authorization) => {
   let createdChat;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
-    createdChat = await createGroupChat(input, userId);
+    createdChat = await createGroupChat(input, userId, username);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
@@ -175,6 +176,15 @@ const createGroupChatIfAuthorized = async (input, authorization) => {
   return createdChat;
 };
 
+// !! For facilitating infinite scroll !!
+// This is the function that is called for the initial groups/groupActivities retrieval
+// Need to obtain the list in DESC order and limit it to 20 or 25 messages in each chat.message array.
+// How is this best accomplished in mongo?
+
+// THEN for subsequent scroll ups, you'll need to create a new graphQL query to retrieve new messages
+// for a particular chat, from the last count that is in the array currently.
+// So for a chat with 100 messages, first in the list will be 100 -> and the last will be 80, so we fetch from
+// 80 to 60 for the next page.
 const retrieveChatsList = async chatIdArr => {
   if (chatIdArr.length > 1) {
     return await Chat.find({ _id: { $in: chatIdArr } });

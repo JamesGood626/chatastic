@@ -6,9 +6,7 @@ export const getGroups = gql`
     groups @client {
       uuid
       title
-      creator {
-        username
-      }
+      creatorUsername
       members {
         username
       }

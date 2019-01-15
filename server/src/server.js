@@ -1,6 +1,6 @@
 const { httpServer, apolloServer } = require("./app");
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 
 httpServer.listen({ port: PORT }, () => {
   console.log(
@@ -12,3 +12,7 @@ httpServer.listen({ port: PORT }, () => {
     }`
   );
 });
+
+// LAST LEFT OFF
+// Working in chats/services/index.js
+// Yeah.. just check out the comments there.

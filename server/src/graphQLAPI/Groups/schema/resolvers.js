@@ -20,10 +20,12 @@ const resolvers = {
     // deleteGroup
   },
   Group: {
-    creator: async ({ creator }, _args, _context) => {
-      return await getUserById(creator);
-    },
+    // Removed in 12/15/18 refactor.
+    // creator: async ({ creator }, _args, _context) => {
+    //   return await getUserById(creator);
+    // },
     chats: async ({ chats }, _args, _context) => {
+      console.log("THESE ARE THE ARGS YOU'RE IGNORING BUT MIGHT NEED: ", _args);
       return await retrieveChatsList(chats);
     },
     members: async ({ members }, _args, _context) => {

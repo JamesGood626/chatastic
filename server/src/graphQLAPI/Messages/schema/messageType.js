@@ -6,7 +6,8 @@ const MessageTypeDef = gql`
     channel: String!
     text: String!
     sentDate: Date!
-    sender: User!
+    senderUsername: String!
+    count: Int!
   }
 
   input createMessageInput {
@@ -17,6 +18,12 @@ const MessageTypeDef = gql`
   input createMessageInExistingChatInput {
     text: String!
     sentDate: Date!
+    chatChannel: String!
+  }
+
+  input RetrieveMessagesInput {
+    start: Int!
+    end: Int!
     chatChannel: String!
   }
 `;

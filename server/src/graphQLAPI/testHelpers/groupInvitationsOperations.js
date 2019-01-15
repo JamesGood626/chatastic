@@ -32,7 +32,8 @@ const loginAndAcceptGroupInvitation = async (createdRequest, loginInput) => {
   } = await acceptGroupInvitationGQLRequest(
     createdRequest,
     token,
-    acceptInvitationInput
+    acceptInvitationInput,
+    true
   );
   return { acceptedMessage, joinedGroup, groupInvitation: groupInvitations[0] };
 };

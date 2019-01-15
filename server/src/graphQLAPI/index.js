@@ -6,13 +6,14 @@ const queryTypeDef = gql`
   type Query {
     getGroup(input: GetGroupInput): Group
     getUserByUsername(input: UserSearchInput!): UserSearchResult
+    retrieveMessagesByChatChannel(input: RetrieveMessagesInput): [Message]
   }
 
   type Mutation {
     acceptGroupInvitation(input: AcceptGroupInvitationInput): AcceptedStatus
     declineGroupInvitation(input: DeclineGroupInvitationInput): DeclinedStatus
-    createUser(input: CreateUserInput!): Authenticated
-    loginUser(input: LoginUserInput!): Authenticated
+    createUser(input: CreateUserInput!): AuthenticatedUser
+    loginUser(input: LoginUserInput!): AuthenticatedUser
     createGroup(input: CreateGroupInput!): Group
     createGroupInvitation(input: CreateGroupInvitationInput!): GroupInvitation
     createDirectChat(input: CreateDirectChatInput!): Chat
@@ -23,7 +24,7 @@ const queryTypeDef = gql`
   }
 
   type Subscription {
-    userCreated(channel: String!): User
+    userCreated(channel: String!): AuthenticatedUser
   }
 `;
 

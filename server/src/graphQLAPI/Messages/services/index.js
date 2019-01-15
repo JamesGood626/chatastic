@@ -2,7 +2,7 @@ const Message = require("../model/message");
 const authorizeRequest = require("../../authorization");
 const { getChatByChannel } = require("../../Chats/services");
 
-const createMessage = input => {
+const createMessage = (input, chat) => {
   return new Promise(async (resolve, reject) => {
     const message = new Message(input);
     try {
@@ -18,11 +18,13 @@ const createMessage = input => {
 // Refactor
 const createMessageIfAuthorized = async (input, authorization) => {
   let createdMessage;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
-    messageInput.sender = userId;
+    const length = chat.messages.length;
+    messageInput.count = length + 1;
+    messageInput.senderUsername = username;
     messageInput.channel = chatChannel;
     createdMessage = await createMessage(messageInput);
     chat.messages = [...chat.messages, createdMessage];
@@ -37,6 +39,24 @@ const createMessageIfAuthorized = async (input, authorization) => {
   return createdMessage;
 };
 
+// The service function that makes pagination possible
+const retrieveMessagesIfAuthorized = async (input, authorization) => {
+  let retrievedMessages;
+  const { userId, username, errors } = await authorizeRequest(authorization);
+  if (userId) {
+    const { start, end, chatChannel } = input;
+    retrievedMessages = await Message.find({
+      channel: chatChannel
+    });
+    // THIS COULD WORK. using start - 1 && end - 1
+    // HOWEVER, the cleaner solution would be to use some query
+    // filters provided by mongoose, but you know... the documentation kind of sucks
+    // Will look into this later
+    retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
+  }
+  return retrievedMessages;
+};
+
 const retrieveMessageList = async messageIdArr => {
   if (messageIdArr.length > 1) {
     return await Message.find({ _id: { $in: messageIdArr } });
@@ -49,5 +69,6 @@ const retrieveMessageList = async messageIdArr => {
 module.exports = {
   createMessage: createMessage,
   createMessageIfAuthorized: createMessageIfAuthorized,
+  retrieveMessagesIfAuthorized: retrieveMessagesIfAuthorized,
   retrieveMessageList: retrieveMessageList
 };
