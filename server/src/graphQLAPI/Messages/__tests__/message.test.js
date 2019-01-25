@@ -6,6 +6,7 @@ const User = require("../../Accounts/model/user");
 const Group = require("../../Groups/model/group");
 const Chat = require("../../Chats/model/chat");
 const Message = require("../model/message");
+const { createAndLoginUser } = require("../../testHelpers/accountsOperations");
 const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
   getMessagesByChatChannelGQLRequest
@@ -65,10 +66,16 @@ const messageTwo = {
 
 const createMessageMutation = `mutation createMessageInExistingChatOp($input: createMessageInExistingChatInput!) {
                                 createMessageInExistingChat(input: $input) {
-                                  channel
-                                  text
-                                  senderUsername
-                                  count
+                                  errors {
+                                    key
+                                    message
+                                  }
+                                  message {
+                                    channel
+                                    text
+                                    senderUsername
+                                    cursor
+                                  }
                                 }
                               }`;
 
@@ -100,65 +107,90 @@ const createMessageGraphQLRequest = async (
 describe("With Message resources a user may", () => {
   let createdRequest;
   let server;
-
-  // test("1+1 = 2", () => {
-  //   expect(1 + 1).toBe(2);
-  // });
+  let token;
+  let groupUuid;
+  let chatChannel;
+  let createdMessageOne;
+  let createdMessageTwo;
 
   beforeAll(async done => {
     server = await httpServer.listen(3004);
     createdRequest = await request.agent(server);
-    done();
-  });
-
-  beforeEach(async done => {
-    await dropCollection(Message);
-    await dropCollection(Chat);
-    await dropCollection(Group);
     await dropCollection(User);
-    done();
-  });
-
-  afterAll(async done => {
-    await server.close(done);
-  });
-
-  test("create a message in a group chat", async done => {
-    const { token } = await createUserGQLRequest(createdRequest, userTwo);
+    // user creation and login
+    const createdUserResponse = await createAndLoginUser(
+      createdRequest,
+      userTwo,
+      true
+    );
+    token = createdUserResponse.token;
+    // User creates a group
     const { uuid } = await createGroupGQLRequest(
       createdRequest,
       token,
-      groupInput
+      groupInput,
+      true
     );
+    // groupUuid used for message pagination test (see below).
+    groupUuid = uuid;
     groupChat.groupUuid = uuid;
+    // User creates a groupChat in the group
     const { title, channel } = await createGroupChatGQLRequest(
       createdRequest,
       token,
       groupChat
     );
     // Starting to create messages in the group chat
+    // chatChannel used for message pagination test (see below).
+    chatChannel = channel;
     messageOne.chatChannel = channel;
+    messageTwo.chatChannel = channel;
+
+    done();
+  });
+
+  // beforeEach(async done => {
+  //   done();
+  // });
+
+  afterAll(async done => {
+    await dropCollection(Message);
+    await dropCollection(Chat);
+    await dropCollection(Group);
+    await server.close(done);
+  });
+
+  test("create a message in a group chat", async done => {
     const {
-      text: messageOneText,
-      count: messageOneCount
+      errors: messageOneErrors,
+      message: { text: messageOneText, cursor: messageOneCursor }
     } = await createMessageGraphQLRequest(
       createdRequest,
       token,
       messageOne,
+      false
+    );
+    const {
+      errors: messageTwoErrors,
+      message: { text: messageTwoText, cursor: messageTwoCursor }
+    } = await createMessageGraphQLRequest(
+      createdRequest,
+      token,
+      messageTwo,
       true
     );
-    messageTwo.chatChannel = channel;
-    const {
-      text: messageTwoText,
-      count: messageTwoCount
-    } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     expect(messageOneText).toBe("This is a message.");
-    expect(messageOneCount).toBe(1);
+    expect(messageOneCursor).toBe(1);
     expect(messageTwoText).toBe("This is a followup message.");
-    expect(messageTwoCount).toBe(2);
+    expect(messageTwoCursor).toBe(2);
+    expect(messageOneErrors).toBe(null);
+    expect(messageTwoErrors).toBe(null);
+    done();
+  });
 
+  test("retrieve paginated message.", async done => {
     const getGroupInput = {
-      groupUuid: uuid
+      groupUuid: groupUuid
     };
     const { chats } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(chats[0].messages.length).toBe(2);
@@ -167,18 +199,27 @@ describe("With Message resources a user may", () => {
     const getMessagesInput = {
       start: 1,
       end: 20,
-      chatChannel: channel
+      chatChannel: chatChannel
     };
-    const { messageList } = await getMessagesByChatChannelGQLRequest(
+    const { messages } = await getMessagesByChatChannelGQLRequest(
       createdRequest,
       token,
       getMessagesInput,
       true
     );
-    console.log("THE MESSAGE LIST YOU NEED: ", messageList);
+    expect(messages.length).toBe(2);
+    expect(messages[0].cursor).toBe(1);
+    expect(messages[1].cursor).toBe(2);
     done();
   });
 
+  // To write this test, I'll need to:
+  // create and login a second user,
+  // add that second user the the created group via group invitation
+  // send the direct message.
+  // check the group association of both users to verify that the message was properly
+  // propogated into both.
+  // Will need to refactor to accomplish this.
   // test("create a message in a direct chat", async done => {
   //   const { username: senderUsername } = await createUserGQLRequest(
   //     createdRequest,

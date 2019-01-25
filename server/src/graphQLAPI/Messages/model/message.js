@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// commit auth fail
 const messageSchema = new Schema({
   channel: {
     type: String,
@@ -17,7 +18,7 @@ const messageSchema = new Schema({
   senderUsername: {
     type: String
   },
-  count: {
+  cursor: {
     type: Number,
     required: true,
     default: 1

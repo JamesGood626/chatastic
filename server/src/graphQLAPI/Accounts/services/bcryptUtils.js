@@ -1,3 +1,4 @@
+const { to } = require("await-to-js");
 const bcrypt = require("bcrypt");
 const uuidv4 = require("uuid/v4");
 
@@ -15,7 +16,7 @@ const hashPasswordAndSaveUser = (user, password, saltRounds = saltAmount) => {
         }
         user.password = hash;
         user.uuid = uuidv4();
-        await user.save();
+        const [error, savedUser] = await to(user.save());
         resolve(user);
       });
     });

@@ -1,13 +1,23 @@
 const { gql } = require("apollo-server-express");
 
-// Don't think you'll need channel here...
+// commit auth fail
 const MessageTypeDef = gql`
   type Message {
     channel: String!
     text: String!
     sentDate: Date!
     senderUsername: String!
-    count: Int!
+    cursor: Int!
+  }
+
+  type MessageResult {
+    errors: [InputError]
+    message: Message
+  }
+
+  type PaginatedMessagesResult {
+    errors: [InputError]
+    messages: [Message]
   }
 
   input createMessageInput {

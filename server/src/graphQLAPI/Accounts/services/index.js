@@ -1,3 +1,4 @@
+const { to } = require("await-to-js");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
@@ -46,7 +47,15 @@ const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
 };
 
 const getUserByUsername = async username => {
-  const user = await User.findOne({ username });
+  const [err, user] = await to(User.findOne({ username }));
+  // Need to pass in a second arg that will indicate which operation
+  // is being performed, if it's login, just return err message
+  // username or password is incorrect.
+  // IF it's a user search to find a user to invite to a group
+  // then indicate that a server error occured.
+  // if it's for authorizing a request, it shouldn't really fail
+  // unless there's a server error. In which case we'll need to
+  // return a server err message.
   return user;
 };
 

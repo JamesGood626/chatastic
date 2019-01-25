@@ -54,8 +54,10 @@ const assignCreatorAndCreateGroup = async (userId, username, input) => {
 const createGroupIfAuthorized = async (input, authorization) => {
   let createdGroup;
   const { userId, username, errors } = await authorizeRequest(authorization);
+  console.log("The userId", userId);
   if ((userId, username)) {
     createdGroup = await assignCreatorAndCreateGroup(userId, username, input);
+    console.log("Group was created: ", createdGroup);
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);

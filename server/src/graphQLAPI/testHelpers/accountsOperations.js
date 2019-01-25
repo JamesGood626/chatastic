@@ -3,11 +3,12 @@ const {
   loginUserGQLRequest
 } = require("./accountsRequest");
 
-// See loginUserMutation GraphQL Document in "./accountsRequest" for data returned
-// for type Authenticated
-const createAndLoginUser = async (createdRequest, userInput, loginInput) => {
-  await createUserGQLRequest(createdRequest, userInput);
-  return await loginUserGQLRequest(createdRequest, loginInput);
+// commit auth fail
+// See createUserMutation GraphQL Document in "./accountsRequest" for data returned
+// for type AuthenticatedUser
+
+const createAndLoginUser = async (createdRequest, userInput) => {
+  return await createUserGQLRequest(createdRequest, userInput);
 };
 
 // See createUserMutation GraphQL Document in "./accountsRequest"

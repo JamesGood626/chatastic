@@ -9,7 +9,7 @@ const { getUserByUsername } = require("../Accounts/services");
 const { retrieveGroupActivitiesList } = require("../GroupActivities/services");
 const { retrieveChatsList } = require("../Chats/services");
 const { retrieveMessageList } = require("../Messages/services");
-
+// commit auth fail
 const chatCreationTestFixtureSetup = async (createdRequest, input) => {
   // Logging in user and creating group
   const {

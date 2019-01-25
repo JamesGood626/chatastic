@@ -15,8 +15,15 @@ const {
  */
 const retrieveMessagesQuery = `query retrieveMessagesByChatChannelOp($input: RetrieveMessagesInput!) {
   retrieveMessagesByChatChannel(input: $input) {
-    channel
-    text
+    errors {
+      key
+      message
+    }
+    messages {
+      channel
+      text
+      cursor
+    }
   }
 }`;
 

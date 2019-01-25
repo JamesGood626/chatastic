@@ -23,7 +23,7 @@ const createMessageIfAuthorized = async (input, authorization) => {
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
     const length = chat.messages.length;
-    messageInput.count = length + 1;
+    messageInput.cursor = length + 1;
     messageInput.senderUsername = username;
     messageInput.channel = chatChannel;
     createdMessage = await createMessage(messageInput);
@@ -53,6 +53,7 @@ const retrieveMessagesIfAuthorized = async (input, authorization) => {
     // filters provided by mongoose, but you know... the documentation kind of sucks
     // Will look into this later
     retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
+    console.log("did retrieve messages: ", retrievedMessages);
   }
   return retrievedMessages;
 };

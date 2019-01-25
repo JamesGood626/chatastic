@@ -98,6 +98,7 @@ const createUserGQLRequest = async (
   }
   return response.body.data.createUser;
 };
+// commit auth fail
 
 const loginUserGQLRequest = async (
   createdRequest,

@@ -48,11 +48,6 @@ const resolvers = {
     groupActivities,
     groupInvitations
   }
-  // Authenticated: {
-  //   groups,
-  //   groupActivities,
-  //   groupInvitations
-  // }
 };
 
 module.exports = resolvers;

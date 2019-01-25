@@ -5,6 +5,7 @@ const {
 } = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
+// commit auth fail
 const resolvers = {
   Query: {
     retrieveMessagesByChatChannel: async (
@@ -16,8 +17,7 @@ const resolvers = {
         input,
         authorization
       );
-      console.log("THE RESOLVER IS BEING HIT", retrievedMessages);
-      return retrievedMessages;
+      return { errors: null, messages: retrievedMessages };
     }
   },
   Mutation: {
@@ -34,9 +34,14 @@ const resolvers = {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      return createdMessage;
+      const payload = {
+        errors: null,
+        message: createdMessage
+      };
+      return payload;
     }
   }
+
   // Message: {
   // sender: async ({ sender }, _args, _context) => {
   //   console.log("THE SENDER IN MESSAGE SENDER RESOLVER: ", sender);
