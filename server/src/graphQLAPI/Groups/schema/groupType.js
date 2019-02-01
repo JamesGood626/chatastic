@@ -12,6 +12,11 @@ const GroupTypeDef = gql`
     members: [GroupMember!]!
   }
 
+  type GroupResult {
+    group: Group
+    errors: [InputError]
+  }
+
   input CreateGroupInput {
     title: String!
   }

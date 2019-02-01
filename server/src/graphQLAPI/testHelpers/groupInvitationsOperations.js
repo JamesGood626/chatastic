@@ -12,12 +12,9 @@ const loginAndCreateGroupSetup = async (
   const {
     authenticatedUser: { token }
   } = await loginUserGQLRequest(createdRequest, loginInput);
-  const { uuid: groupUuid } = await createGroupGQLRequest(
-    createdRequest,
-    token,
-    groupInput,
-    true
-  );
+  const {
+    group: { uuid: groupUuid }
+  } = await createGroupGQLRequest(createdRequest, token, groupInput);
   return { token, groupUuid };
 };
 

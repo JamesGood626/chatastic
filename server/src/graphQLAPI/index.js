@@ -5,7 +5,7 @@ const { gql } = require("apollo-server-express");
 const queryTypeDef = gql`
   type Query {
     allUsers: [Bull]
-    getGroup(input: GetGroupInput): Group
+    getGroup(input: GetGroupInput): GroupResult
     getUserByUsername(input: UserSearchInput!): UserSearchResult
     retrieveMessagesByChatChannel(
       input: RetrieveMessagesInput
@@ -21,7 +21,7 @@ const queryTypeDef = gql`
     ): DeclinedStatusResult
     createUser(input: CreateUserInput!): AuthenticatedUserResult
     loginUser(input: LoginUserInput!): AuthenticatedUserResult
-    createGroup(input: CreateGroupInput!): Group
+    createGroup(input: CreateGroupInput!): GroupResult
     createGroupInvitation(
       input: CreateGroupInvitationInput!
     ): GroupInvitationResult

@@ -53,10 +53,6 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
 
-  // test("1+1 = 2", () => {
-  //   expect(1 + 1).toBe(2);
-  // });
-
   beforeAll(async done => {
     server = await httpServer.listen(2000);
     createdRequest = await request.agent(server);
