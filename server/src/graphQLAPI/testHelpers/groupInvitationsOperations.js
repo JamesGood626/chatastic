@@ -9,31 +9,31 @@ const loginAndCreateGroupSetup = async (
   loginInput,
   groupInput
 ) => {
-  const { token } = await loginUserGQLRequest(createdRequest, loginInput);
+  const {
+    authenticatedUser: { token }
+  } = await loginUserGQLRequest(createdRequest, loginInput);
   const { uuid: groupUuid } = await createGroupGQLRequest(
     createdRequest,
     token,
-    groupInput
+    groupInput,
+    true
   );
   return { token, groupUuid };
 };
 
 const loginAndAcceptGroupInvitation = async (createdRequest, loginInput) => {
-  const { token, groupInvitations } = await loginUserGQLRequest(
-    createdRequest,
-    loginInput
-  );
+  const {
+    authenticatedUser: { token, groupInvitations }
+  } = await loginUserGQLRequest(createdRequest, loginInput);
   const acceptInvitationInput = {
     invitationUuid: groupInvitations[0].uuid
   };
   const {
-    acceptedMessage,
-    joinedGroup
+    acceptedStatus: { acceptedMessage, joinedGroup }
   } = await acceptGroupInvitationGQLRequest(
     createdRequest,
     token,
-    acceptInvitationInput,
-    true
+    acceptInvitationInput
   );
   return { acceptedMessage, joinedGroup, groupInvitation: groupInvitations[0] };
 };

@@ -15,31 +15,35 @@ const {
  */
 const createGroupInvitationMutation = `mutation createGroupInvitationOp($input: CreateGroupInvitationInput!) {
   createGroupInvitation(input: $input) {
-    uuid
-    group {
-      title
-    }
-    inviter {
-      username
-      firstname
-    }
-    invitee {
-      username
-      firstname
+    groupInvitation { 
+      uuid
+      group {
+        title
+      }
+      inviter {
+        username
+        firstname
+      }
+      invitee {
+        username
+        firstname
+      }
     }
   }
 }`;
 
 const acceptGroupInvitationMutation = `mutation acceptGroupInvitationOp($input: AcceptGroupInvitationInput!) {
   acceptGroupInvitation(input: $input) {
-    acceptedMessage
-    joinedGroup {
-      uuid
-      members {
+    acceptedStatus {
+      acceptedMessage
+      joinedGroup {
         uuid
-        firstname
-        lastname
-        username
+        members {
+          uuid
+          firstname
+          lastname
+          username
+        }
       }
     }
   }

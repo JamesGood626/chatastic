@@ -14,7 +14,7 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
-      const createdChat = await createDirectChatIfAuthorized(
+      const createdDirectChat = await createDirectChatIfAuthorized(
         input,
         authorization
       );
@@ -22,14 +22,14 @@ const resolvers = {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      return createdChat;
+      return { errors: null, chat: createdDirectChat };
     },
     createGroupChat: async (
       _parentValue,
       { input },
       { headers: { authorization } }
     ) => {
-      const createdChat = await createGroupChatIfAuthorized(
+      const createdGroupChat = await createGroupChatIfAuthorized(
         input,
         authorization
       );
@@ -37,7 +37,7 @@ const resolvers = {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      return createdChat;
+      return { errors: null, chat: createdGroupChat };
     }
   },
   Chat: {

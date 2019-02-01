@@ -16,19 +16,9 @@ const {
   getGroupGQLRequest
 } = require("../../testHelpers/groupsRequest");
 const {
-  createGroupInvitationGQLRequest
-} = require("../../testHelpers/groupInvitationsRequest");
-const {
   createDirectChatGQLRequest,
   createGroupChatGQLRequest
 } = require("../../testHelpers/chatsRequest");
-const { getUserByUuid, getUserByUsername } = require("../../Accounts/services");
-const { getGroupByUuid } = require("../../Groups/services");
-const {
-  getGroupActivityById,
-  retrieveGroupActivitiesList
-} = require("../../GroupActivities/services");
-const { retrieveChatsList } = require("../services");
 
 // NOTE!!!!! had to add groupUuid to accomodate checking whether
 // a groupActivity has yet to be created upon creation of a directChat
@@ -97,6 +87,41 @@ const fixtureInput = {
   secondLoginInput
 };
 
+const createDirectChatTestSetup = async createdRequest => {
+  const {
+    token,
+    groupUuid,
+    senderUsername,
+    recipientUsername
+  } = await chatCreationTestFixtureSetup(createdRequest, fixtureInput);
+  directChat.groupUuid = groupUuid;
+  directChat.senderUsername = senderUsername;
+  directChat.recipientUsername = recipientUsername;
+  await createDirectChatGQLRequest(createdRequest, token, directChat);
+  // Just passing off the getting of the nested Mongo resources to a helper
+  const {
+    groupActivities: senderGroupActivities,
+    directChats: senderDirectChats,
+    messages: senderDirectChatMessages
+  } = await getDirectChatTestables(senderUsername);
+  const {
+    groupActivities: recipientGroupActivities,
+    directChats: recipientDirectChats,
+    messages: recipientDirectChatMessages
+  } = await getDirectChatTestables(recipientUsername);
+  return {
+    groupUuid,
+    senderGroupActivities,
+    recipientGroupActivities,
+    senderDirectChats,
+    recipientDirectChats,
+    senderDirectChatMessages,
+    recipientDirectChatMessages
+  };
+};
+
+// Could go further with these tests by repeating this with a third user that's part of the same group, and then
+// ensuring that he isn't able to see any of the direct messages between two users.
 describe("With the Chat resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
@@ -121,54 +146,34 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     await server.close(done);
   });
 
-  // Should really ensure that these user's are both in the same group before creating this direct chat.
   test("create a direct chat", async done => {
-    const {
-      token,
-      groupUuid,
-      senderUsername,
-      recipientUsername
-    } = await chatCreationTestFixtureSetup(createdRequest, fixtureInput);
-    directChat.groupUuid = groupUuid;
-    directChat.senderUsername = senderUsername;
-    directChat.recipientUsername = recipientUsername;
-    await createDirectChatGQLRequest(createdRequest, token, directChat);
-    // Just passing off the getting of the nested Mongo resources to a helper
-    const {
-      groupActivities: senderGroupActivities,
-      directChats: senderDirectChats,
-      messages: senderDirectChatMessages
-    } = await getDirectChatTestables(senderUsername);
-    const {
-      groupActivities: recipientGroupActivities,
-      directChats: recipientDirectChats,
-      messages: recipientDirectChatMessages
-    } = await getDirectChatTestables(recipientUsername);
-
+    const data = await createDirectChatTestSetup(createdRequest);
     // groupActivities checks
-    expect(senderGroupActivities.length).toBe(1);
-    expect(recipientGroupActivities.length).toBe(1);
-    expect(senderGroupActivities[0].groupUuid).toBe(groupUuid);
-    expect(recipientGroupActivities[0].groupUuid).toBe(groupUuid);
+    expect(data.senderGroupActivities.length).toBe(1);
+    expect(data.recipientGroupActivities.length).toBe(1);
+    expect(data.senderGroupActivities[0].groupUuid).toBe(data.groupUuid);
+    expect(data.recipientGroupActivities[0].groupUuid).toBe(data.groupUuid);
     // directChats checks
-    expect(senderDirectChats.length).toBe(1);
-    expect(recipientDirectChats.length).toBe(1);
-    expect(senderDirectChats[0].senderUsername).toBe("BamBamSar");
-    expect(recipientDirectChats[0].senderUsername).toBe("BamBamSar");
+    expect(data.senderDirectChats.length).toBe(1);
+    expect(data.recipientDirectChats.length).toBe(1);
+    expect(data.senderDirectChats[0].senderUsername).toBe("BamBamSar");
+    expect(data.recipientDirectChats[0].senderUsername).toBe("BamBamSar");
     // messages checks
-    expect(senderDirectChatMessages.length).toBe(1);
-    expect(recipientDirectChatMessages.length).toBe(1);
-    expect(senderDirectChatMessages[0].text).toBe(
+    expect(data.senderDirectChatMessages.length).toBe(1);
+    expect(data.recipientDirectChatMessages.length).toBe(1);
+    expect(data.senderDirectChatMessages[0].text).toBe(
       "The start of something amazing."
     );
-    expect(recipientDirectChatMessages[0].text).toBe(
+    expect(data.recipientDirectChatMessages[0].text).toBe(
       "The start of something amazing."
     );
     done();
   });
 
   test("create a group chat", async done => {
-    const { token } = await createUserGQLRequest(createdRequest, userTwo);
+    const {
+      authenticatedUser: { token }
+    } = await createUserGQLRequest(createdRequest, userTwo);
     // Need uuid for more testing after chat is added.
     const { uuid } = await createGroupGQLRequest(
       createdRequest,
@@ -176,11 +181,9 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
       groupInput
     );
     groupChat.groupUuid = uuid;
-    const { title } = await createGroupChatGQLRequest(
-      createdRequest,
-      token,
-      groupChat
-    );
+    const {
+      chat: { title }
+    } = await createGroupChatGQLRequest(createdRequest, token, groupChat);
     const getGroupInput = {
       groupUuid: uuid
     };

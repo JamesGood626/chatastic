@@ -50,7 +50,9 @@ describe("With the Group resource a user may issue a GraphQL request to", () => 
   });
 
   test("create a group and a corresponding group activity", async done => {
-    const { token } = await createUserGQLRequest(createdRequest, user);
+    const {
+      authenticatedUser: { token }
+    } = await createUserGQLRequest(createdRequest, user);
     const { uuid, title, creatorUsername } = await createGroupGQLRequest(
       createdRequest,
       token,
@@ -69,7 +71,9 @@ describe("With the Group resource a user may issue a GraphQL request to", () => 
   // being added to, and not overwritten. -> perhaps later
 
   test("get group by uuid", async done => {
-    const { token } = await createUserGQLRequest(createdRequest, user);
+    const {
+      authenticatedUser: { token }
+    } = await createUserGQLRequest(createdRequest, user);
     const { uuid } = await createGroupGQLRequest(
       createdRequest,
       token,

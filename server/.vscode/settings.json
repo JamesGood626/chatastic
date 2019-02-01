@@ -4,5 +4,6 @@
     "titleBar.inactiveForeground": "#fcfcfc",
     "titleBar.activeBackground": "#35e0f0",
     "titleBar.inactiveBackground": "#35e0f0"
-  }
+  },
+  "debug.node.autoAttach": "off"
 }

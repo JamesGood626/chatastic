@@ -82,10 +82,13 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
     groupInvitationInput.groupUuid = groupUuid;
     groupInvitationInput.inviteeUuid = userOneUuid;
     // uuid from this invitation creation used below in accept invitation input
-    const { group, inviter, invitee } = await createGroupInvitationGQLRequest(
+    const {
+      groupInvitation: { group, inviter, invitee }
+    } = await createGroupInvitationGQLRequest(
       createdRequest,
       token,
-      groupInvitationInput
+      groupInvitationInput,
+      true
     );
     expect(group.title).toBe("The Group You Need");
     expect(inviter.firstname).toBe("Sarah");

@@ -16,21 +16,33 @@ const {
 // Remember to change sender&recipientUuid to Username in schema and chat's service index file
 const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDirectChatInput!) {
   createDirectChat(input: $input) {
-    channel
-    senderUsername
-    recipientUsername
-    messages {
-      text
-      sentDate
+    chat {
+      channel
       senderUsername
+      recipientUsername
+      messages {
+        text
+        sentDate
+        senderUsername
+      }
+    }
+    errors {
+      key
+      message
     }
   }
 }`;
 
 const createGroupChatMutation = `mutation createGroupChatOp($input: CreateGroupChatInput!) {
   createGroupChat(input: $input) {
-    title
-    channel
+    chat {
+      title
+      channel
+    }
+    errors {
+      key
+      message
+    }
   }
 }`;
 

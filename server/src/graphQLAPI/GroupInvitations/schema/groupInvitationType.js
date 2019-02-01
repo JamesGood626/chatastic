@@ -35,6 +35,21 @@ const GroupInvitationTypeDef = gql`
     groupUuid: String!
     inviteeUuid: String!
   }
+
+  type GroupInvitationResult {
+    groupInvitation: GroupInvitation
+    errors: [InputError]
+  }
+
+  type AcceptedStatusResult {
+    acceptedStatus: AcceptedStatus
+    errors: [InputError]
+  }
+
+  type DeclinedStatusResult {
+    declinedStatus: DeclinedStatus
+    errors: [InputError]
+  }
 `;
 
 module.exports = GroupInvitationTypeDef;
