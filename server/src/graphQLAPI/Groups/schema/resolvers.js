@@ -5,7 +5,8 @@ const { retrieveChatsList } = require("../../Chats/services");
 const resolvers = {
   Query: {
     getGroup: async (_parentValue, { input: { groupUuid } }, _context) => {
-      return getGroupByUuid(groupUuid);
+      const group = await getGroupByUuid(groupUuid);
+      return { errors: null, group };
     }
   },
   Mutation: {
@@ -14,10 +15,8 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
-      console.log("THE CREATE GROUP MUTATION IS WORKING");
       const createdGroup = await createGroupIfAuthorized(input, authorization);
-      console.log("GROUP TO BE RETURNED: ", createdGroup);
-      return createdGroup;
+      return { errors: null, group: createdGroup };
     }
     // deleteGroup
   },

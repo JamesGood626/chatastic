@@ -15,25 +15,37 @@ const {
  */
 const createGroupMutation = `mutation createGroupOp($input: CreateGroupInput!) {
   createGroup(input: $input) {
-    id
-    uuid
-    title
-    creatorUsername
+    group {
+      id
+      uuid
+      title
+      creatorUsername
+    }
+    errors {
+      key
+      message
+    }
   }
 }`;
 
 const getGroupQuery = `query getGroupOp($input: GetGroupInput!) {
   getGroup(input: $input) {
-    uuid
-    title
-    chats {
+    group { 
+      uuid
       title
-      messages {
-        text
+      chats {
+        title
+        messages {
+          text
+        }
+      }
+      members {
+        firstname
       }
     }
-    members {
-      firstname
+    errors {
+      key
+      message
     }
   }
 }`;

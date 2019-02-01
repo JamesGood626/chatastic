@@ -175,11 +175,9 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
       authenticatedUser: { token }
     } = await createUserGQLRequest(createdRequest, userTwo);
     // Need uuid for more testing after chat is added.
-    const { uuid } = await createGroupGQLRequest(
-      createdRequest,
-      token,
-      groupInput
-    );
+    const {
+      group: { uuid }
+    } = await createGroupGQLRequest(createdRequest, token, groupInput);
     groupChat.groupUuid = uuid;
     const {
       chat: { title }
@@ -187,10 +185,9 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     const getGroupInput = {
       groupUuid: uuid
     };
-    const { chats, members } = await getGroupGQLRequest(
-      createdRequest,
-      getGroupInput
-    );
+    const {
+      group: { chats, members }
+    } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(title).toBe("Group Chat");
     expect(chats.length).toBe(1);
     expect(chats[0].title).toBe("Group Chat");

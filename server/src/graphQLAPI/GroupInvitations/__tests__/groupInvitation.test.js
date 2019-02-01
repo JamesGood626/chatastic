@@ -87,8 +87,7 @@ describe("With the GroupInvitation resource a user may issue a GraphQL request t
     } = await createGroupInvitationGQLRequest(
       createdRequest,
       token,
-      groupInvitationInput,
-      true
+      groupInvitationInput
     );
     expect(group.title).toBe("The Group You Need");
     expect(inviter.firstname).toBe("Sarah");

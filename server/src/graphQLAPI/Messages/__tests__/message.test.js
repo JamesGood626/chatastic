@@ -123,12 +123,9 @@ describe("With Message resources a user may", () => {
     );
     token = createdUserResponse.authenticatedUser.token;
     // User creates a group
-    const { uuid } = await createGroupGQLRequest(
-      createdRequest,
-      token,
-      groupInput,
-      true
-    );
+    const {
+      group: { uuid }
+    } = await createGroupGQLRequest(createdRequest, token, groupInput, true);
     // groupUuid used for message pagination test (see below).
     groupUuid = uuid;
     groupChat.groupUuid = uuid;
@@ -160,21 +157,11 @@ describe("With Message resources a user may", () => {
     const {
       errors: messageOneErrors,
       message: { text: messageOneText, cursor: messageOneCursor }
-    } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageOne,
-      false
-    );
+    } = await createMessageGraphQLRequest(createdRequest, token, messageOne);
     const {
       errors: messageTwoErrors,
       message: { text: messageTwoText, cursor: messageTwoCursor }
-    } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageTwo,
-      true
-    );
+    } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     expect(messageOneText).toBe("This is a message.");
     expect(messageOneCursor).toBe(1);
     expect(messageTwoText).toBe("This is a followup message.");
@@ -188,7 +175,9 @@ describe("With Message resources a user may", () => {
     const getGroupInput = {
       groupUuid: groupUuid
     };
-    const { chats } = await getGroupGQLRequest(createdRequest, getGroupInput);
+    const {
+      group: { chats }
+    } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(chats[0].messages.length).toBe(2);
 
     // THE TEST OF PAGINATION
@@ -200,8 +189,7 @@ describe("With Message resources a user may", () => {
     const { messages } = await getMessagesByChatChannelGQLRequest(
       createdRequest,
       token,
-      getMessagesInput,
-      true
+      getMessagesInput
     );
     expect(messages.length).toBe(2);
     expect(messages[0].cursor).toBe(1);
