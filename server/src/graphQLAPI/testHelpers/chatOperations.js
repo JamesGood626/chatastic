@@ -9,7 +9,7 @@ const { getUserByUsername } = require("../Accounts/services");
 const { retrieveGroupActivitiesList } = require("../GroupActivities/services");
 const { retrieveChatsList } = require("../Chats/services");
 const { retrieveMessageList } = require("../Messages/services");
-// commit auth fail
+
 const chatCreationTestFixtureSetup = async (createdRequest, input) => {
   // Logging in user and creating group
   const {
@@ -18,26 +18,29 @@ const chatCreationTestFixtureSetup = async (createdRequest, input) => {
     groupInvitationInput,
     secondLoginInput
   } = input;
+
   const { token, groupUuid } = await loginAndCreateGroupSetup(
     createdRequest,
     loginInput,
     groupInput
   );
+
   // Creating group invitation
   const { uuid: userOneUuid, username } = await getUserByUsername("BamBamSam");
   groupInvitationInput.groupUuid = groupUuid;
   groupInvitationInput.inviteeUuid = userOneUuid;
-  const { group, inviter, invitee } = await createGroupInvitationGQLRequest(
+
+  const {
+    groupInvitation: { inviter }
+  } = await createGroupInvitationGQLRequest(
     createdRequest,
     token,
     groupInvitationInput
   );
+
   // Accepting group invitation
-  const {
-    acceptedMessage,
-    joinedGroup,
-    groupInvitation
-  } = await loginAndAcceptGroupInvitation(createdRequest, secondLoginInput);
+  await loginAndAcceptGroupInvitation(createdRequest, secondLoginInput);
+
   return {
     token,
     groupUuid,

@@ -110,8 +110,6 @@ describe("With Message resources a user may", () => {
   let token;
   let groupUuid;
   let chatChannel;
-  let createdMessageOne;
-  let createdMessageTwo;
 
   beforeAll(async done => {
     server = await httpServer.listen(3004);
@@ -123,7 +121,7 @@ describe("With Message resources a user may", () => {
       userTwo,
       true
     );
-    token = createdUserResponse.token;
+    token = createdUserResponse.authenticatedUser.token;
     // User creates a group
     const { uuid } = await createGroupGQLRequest(
       createdRequest,
@@ -135,11 +133,9 @@ describe("With Message resources a user may", () => {
     groupUuid = uuid;
     groupChat.groupUuid = uuid;
     // User creates a groupChat in the group
-    const { title, channel } = await createGroupChatGQLRequest(
-      createdRequest,
-      token,
-      groupChat
-    );
+    const {
+      chat: { title, channel }
+    } = await createGroupChatGQLRequest(createdRequest, token, groupChat);
     // Starting to create messages in the group chat
     // chatChannel used for message pagination test (see below).
     chatChannel = channel;

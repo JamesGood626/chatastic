@@ -8,6 +8,8 @@ const { gql } = require("apollo-server-express");
 // 3. Create an Invitation model, which will be displayed for any users for which
 //    it is created for.
 
+// Thinking about changing groupInvitations on AuthenticatedUser to be receivedGroupInvitations
+// Refer to GroupActivities type to see the update regarding groupInvitations there.
 const UserTypeDef = gql`
   interface User {
     uuid: String!
@@ -49,11 +51,8 @@ const UserTypeDef = gql`
   }
 
   type UserSearchResult {
-    uuid: String
-    firstname: String
-    lastname: String
-    username: String
-    message: String
+    user: Invitee
+    errors: [InputError]
   }
 
   input UserSearchInput {
@@ -70,6 +69,16 @@ const UserTypeDef = gql`
   input LoginUserInput {
     username: String!
     password: String!
+  }
+
+  type AuthenticatedUserResult {
+    errors: [InputError]
+    authenticatedUser: AuthenticatedUser
+  }
+
+  type Bull {
+    name: String!
+    age: Int!
   }
 `;
 

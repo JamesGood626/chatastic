@@ -15,51 +15,63 @@ const {
  */
 const createUserMutation = `mutation createUserOp($input: CreateUserInput!) {
   createUser(input: $input) {
-    firstname
-    lastname
-    username
-    token
-    uuid
+    errors {
+      key
+      message
+    }
+    authenticatedUser {
+      firstname
+      lastname
+      username
+      token
+      uuid
+    }
   }
 }`;
 
 const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
   loginUser(input: $input) {
-    firstname
-    lastname
-    username
-    token
-    groups {
-      uuid
-      title
+    errors {
+      key
+      message
     }
-    groupActivities {
-      groupUuid
-      directChats {
-        channel
-        title
-        messages {
-          text
-          sentDate
-          senderUsername
-        }
-      }
-    }
-    groupInvitations {
-      uuid
-      group {
+    authenticatedUser {
+      firstname
+      lastname
+      username
+      token
+      groups {
         uuid
         title
       }
-      inviter {
-        firstname
-        lastname
-        username
+      groupActivities {
+        groupUuid
+        directChats {
+          channel
+          title
+          messages {
+            text
+            sentDate
+            senderUsername
+          }
+        }
       }
-      invitee {
-        firstname
-        lastname
-        username
+      groupInvitations {
+        uuid
+        group {
+          uuid
+          title
+        }
+        inviter {
+          firstname
+          lastname
+          username
+        }
+        invitee {
+          firstname
+          lastname
+          username
+        }
       }
     }
   }
@@ -67,11 +79,16 @@ const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
 
 const userSearchQuery = `query getUserByUsernameOp ($input: UserSearchInput!) {
   getUserByUsername (input: $input) {
-    uuid
-    firstname
-    lastname
-    username
-    message
+    errors {
+      key
+      message
+    }
+    user {
+      uuid
+      firstname
+      lastname
+      username
+    }
   }
 }`;
 

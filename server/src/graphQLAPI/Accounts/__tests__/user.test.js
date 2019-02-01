@@ -73,10 +73,10 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("create a user", async done => {
-    const { firstname, lastname, username, token } = await createUserGQLRequest(
-      createdRequest,
-      userInput
-    );
+    const {
+      errors,
+      authenticatedUser: { firstname, lastname, username, token }
+    } = await createUserGQLRequest(createdRequest, userInput);
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
     expect(username).toBe("BamBamSam");
@@ -86,11 +86,10 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
   });
 
   test("login a user", async done => {
-    const { firstname, lastname, username, token } = await createAndLoginUser(
-      createdRequest,
-      userInput,
-      loginInput
-    );
+    const {
+      errors,
+      authenticatedUser: { firstname, lastname, username, token }
+    } = await createAndLoginUser(createdRequest, userInput, loginInput);
     expect(firstname).toBe("Sam");
     expect(lastname).toBe("Holland");
     expect(username).toBe("BamBamSam");
@@ -101,12 +100,17 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
 
   test("get a user by username", async done => {
     const {
-      userTwoData: { token }
+      userTwoData: {
+        authenticatedUser: { token }
+      }
     } = await createTwoUsers(createdRequest, userInput, userTwoInput);
-    const { username } = await getUserByUsernameGQLRequest(
+    const {
+      user: { username }
+    } = await getUserByUsernameGQLRequest(
       createdRequest,
       token,
-      userSearchInput
+      userSearchInput,
+      true
     );
     expect(username).toBe(userSearchInput.username);
     done();

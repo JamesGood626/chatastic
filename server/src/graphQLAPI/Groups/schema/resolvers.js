@@ -14,7 +14,9 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
+      console.log("THE CREATE GROUP MUTATION IS WORKING");
       const createdGroup = await createGroupIfAuthorized(input, authorization);
+      console.log("GROUP TO BE RETURNED: ", createdGroup);
       return createdGroup;
     }
     // deleteGroup

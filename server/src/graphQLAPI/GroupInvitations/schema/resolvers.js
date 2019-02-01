@@ -25,7 +25,7 @@ const resolvers = {
       //   GroupInvitationCreated: createdGroupInvitation,
       //   channelId: createdGroupInvitation.channelId
       // });
-      return createdGroupInvitation;
+      return { errors: null, groupInvitation: createdGroupInvitation };
     },
     acceptGroupInvitation: async (
       _parentValue,
@@ -37,7 +37,11 @@ const resolvers = {
         authorization
       );
       if (joinedGroup) {
-        return { acceptedMessage: "Successfully joined.", joinedGroup };
+        const acceptedStatus = {
+          acceptedMessage: "Successfully joined.",
+          joinedGroup
+        };
+        return { errors: null, acceptedStatus };
       } else {
         throw new Error(
           "Database Error occured while accepting group invitation."
@@ -53,7 +57,7 @@ const resolvers = {
         input,
         authorization
       );
-      return { declinedMessage: "Invitation Rejected." };
+      return { errors: null, declinedMessage: "Invitation Rejected." };
     }
   },
   AcceptedStatus: {

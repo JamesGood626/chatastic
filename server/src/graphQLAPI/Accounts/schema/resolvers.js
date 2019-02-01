@@ -12,24 +12,36 @@ const {
 // had to switch it from a query to a mutation for the clientside.
 const resolvers = {
   Query: {
+    allUsers: (_parentValue, _args, _context) => {
+      return [
+        { name: "sam", age: 20 },
+        { name: "jane", age: 30 },
+        { name: "freddie", age: 40 }
+      ];
+    },
     getUserByUsername: async (
       _parentValue,
       { input: { username } },
       { headers: { authorization } }
     ) => {
-      return await getUserByUsernameIfAuthorized(
+      console.log("IT WORKED");
+      const user = await getUserByUsernameIfAuthorized(
         username,
         authorization,
         authorizeRequest
       );
+      return { errors: null, user };
     }
   },
   Mutation: {
     createUser: async (_parentValue, { input }, _context) => {
-      return await createUser(input);
+      // const data = await createUser(input);
+      return { errors: null, authenticatedUser: await createUser(input) };
     },
     loginUser: async (_parentValue, { input }, { req }) => {
-      return await loginUser(input, req);
+      return { errors: null, authenticatedUser: await loginUser(input, req) };
+
+      // return await loginUser(input, req);
     }
   },
   Subscription: {

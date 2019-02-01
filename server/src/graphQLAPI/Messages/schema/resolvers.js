@@ -34,11 +34,7 @@ const resolvers = {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      const payload = {
-        errors: null,
-        message: createdMessage
-      };
-      return payload;
+      return { errors: null, message: createdMessage };
     }
   }
 

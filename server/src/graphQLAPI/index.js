@@ -4,6 +4,7 @@ const { gql } = require("apollo-server-express");
 // commit auth fail
 const queryTypeDef = gql`
   type Query {
+    allUsers: [Bull]
     getGroup(input: GetGroupInput): Group
     getUserByUsername(input: UserSearchInput!): UserSearchResult
     retrieveMessagesByChatChannel(
@@ -12,21 +13,27 @@ const queryTypeDef = gql`
   }
 
   type Mutation {
-    acceptGroupInvitation(input: AcceptGroupInvitationInput): AcceptedStatus
-    declineGroupInvitation(input: DeclineGroupInvitationInput): DeclinedStatus
-    createUser(input: CreateUserInput!): AuthenticatedUser
-    loginUser(input: LoginUserInput!): AuthenticatedUser
+    acceptGroupInvitation(
+      input: AcceptGroupInvitationInput
+    ): AcceptedStatusResult
+    declineGroupInvitation(
+      input: DeclineGroupInvitationInput
+    ): DeclinedStatusResult
+    createUser(input: CreateUserInput!): AuthenticatedUserResult
+    loginUser(input: LoginUserInput!): AuthenticatedUserResult
     createGroup(input: CreateGroupInput!): Group
-    createGroupInvitation(input: CreateGroupInvitationInput!): GroupInvitation
-    createDirectChat(input: CreateDirectChatInput!): Chat
-    createGroupChat(input: CreateGroupChatInput!): Chat
+    createGroupInvitation(
+      input: CreateGroupInvitationInput!
+    ): GroupInvitationResult
+    createDirectChat(input: CreateDirectChatInput!): ChatResult
+    createGroupChat(input: CreateGroupChatInput!): ChatResult
     createMessageInExistingChat(
       input: createMessageInExistingChatInput!
     ): MessageResult
   }
 
   type Subscription {
-    userCreated(channel: String!): AuthenticatedUser
+    userCreated(channel: String!): AuthenticatedUserResult
   }
 
   type InputError {

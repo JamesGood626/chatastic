@@ -49,7 +49,7 @@ const applyGraphQL = app => {
   // but apolloServer adds adequate bodyParser in it's implementation, will need to checkout source?
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.use("*", cors({ origin: `http://localhost:3000` }));
+  app.use("*", cors({ origin: `http://localhost:8000` }));
   app.use(helmet());
 
   const apolloServer = new ApolloServer({

@@ -15,6 +15,11 @@ const ChatTypeDef = gql`
     messages: [Message]
   }
 
+  type ChatResult {
+    chat: Chat
+    errors: [InputError]
+  }
+
   input CreateDirectChatInput {
     groupUuid: String!
     recipientUsername: String!

@@ -11,7 +11,8 @@ import {
 import "jest-dom/extend-expect";
 import { CREATE_GROUP } from "../../../../graphQL/mutations/remote/groups";
 import CreateGroupBtn from "../createGroupBtn";
-import client from "../../../../graphQL/schema/mockClient";
+// import client from "../../../../graphQL/schema/mockClient";
+import client from "../../../../graphQL/client";
 
 afterEach(cleanup);
 
@@ -53,7 +54,7 @@ const updateGroups = (cache, { data: { createGroup } }) => {
 //   }
 // ];
 
-it("renders without error", () => {
+it("does stuff", () => {
   const { debug, getByTestId } = render(
     <ApolloProvider client={client}>
       <CreateGroupBtn createGroup={createGroup} updateGroups={updateGroups} />
