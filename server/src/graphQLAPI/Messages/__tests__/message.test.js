@@ -180,10 +180,14 @@ describe("With Message resources a user may", () => {
     } = await getGroupGQLRequest(createdRequest, getGroupInput);
     expect(chats[0].messages.length).toBe(2);
 
+    await createMessageGraphQLRequest(createdRequest, token, messageTwo);
+    await createMessageGraphQLRequest(createdRequest, token, messageTwo);
+    await createMessageGraphQLRequest(createdRequest, token, messageTwo);
+
     // THE TEST OF PAGINATION
     const getMessagesInput = {
       start: 1,
-      end: 20,
+      end: 4,
       chatChannel: chatChannel
     };
     const { messages } = await getMessagesByChatChannelGQLRequest(
@@ -191,7 +195,7 @@ describe("With Message resources a user may", () => {
       token,
       getMessagesInput
     );
-    expect(messages.length).toBe(2);
+    expect(messages.length).toBe(4);
     expect(messages[0].cursor).toBe(1);
     expect(messages[1].cursor).toBe(2);
     done();
