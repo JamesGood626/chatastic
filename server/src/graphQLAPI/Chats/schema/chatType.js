@@ -13,6 +13,7 @@ const ChatTypeDef = gql`
     senderUsername: String!
     recipientUsername: String!
     messages: [Message]
+    participating: Boolean!
   }
 
   type ChatResult {

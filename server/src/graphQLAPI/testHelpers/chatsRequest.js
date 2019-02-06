@@ -69,7 +69,11 @@ const createDirectChatGQLRequest = async (
     operationInfo,
     token
   );
-  if (debug) console.log("createDirectChat response body: ", response.body);
+  if (debug)
+    console.log(
+      "createDirectChat response body: ",
+      response.body.data.createDirectChat.chat
+    );
   return response.body.data.createDirectChat;
 };
 

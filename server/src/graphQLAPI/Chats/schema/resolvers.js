@@ -29,15 +29,13 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
-      const createdGroupChat = await createGroupChatIfAuthorized(
-        input,
-        authorization
-      );
+      const result = await createGroupChatIfAuthorized(input, authorization);
+      console.log("What you need: ", result);
       // pubsub.publish("MessageCreated", {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      return { errors: null, chat: createdGroupChat };
+      return { errors: result.errors, chat: result.chat };
     }
   },
   Chat: {

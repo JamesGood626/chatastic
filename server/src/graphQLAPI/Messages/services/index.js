@@ -45,14 +45,24 @@ const retrieveMessagesIfAuthorized = async (input, authorization) => {
   const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
     const { start, end, chatChannel } = input;
-    retrievedMessages = await Message.find({
-      channel: chatChannel
-    });
+    // replacing this
+    // retrievedMessages = await Message.find({
+    //   channel: chatChannel
+    // });
+
+    retrievedMessages = await Message.find(
+      { cursor: { $gte: start, $lte: end } },
+      result => {
+        console.log("These are the results: ", result);
+        return result;
+      }
+    );
     // THIS COULD WORK. using start - 1 && end - 1
     // HOWEVER, the cleaner solution would be to use some query
     // filters provided by mongoose, but you know... the documentation kind of sucks
     // Will look into this later
-    retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
+    //  AND replacing this
+    // retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
     console.log("did retrieve messages: ", retrievedMessages);
   }
   return retrievedMessages;

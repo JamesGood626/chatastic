@@ -1,3 +1,4 @@
+const { to } = require("await-to-js");
 const uuidv1 = require("uuid/v1");
 const uuidv4 = require("uuid/v4");
 const Chat = require("../model/chat");
@@ -31,22 +32,43 @@ const createDirectChat = (input, messageId) => {
   });
 };
 
+// Ahhhh, to enforce that the same group can't have duplicate named group chat title's
+// with the current implementation I'd need to query for the array of groupChats
+// AND THEN filter to see if that name is in there.
+// OR I can do that MongoDB trigger/check enforcement thing of which the name currently
+// escapes me, but that would be the cleanest option I think?
+// This matters so it must be done.
+
+// But it'll be done later... But as of now this is breaking many tests.†
 const createGroupChat = (input, userId, username) => {
   return new Promise(async (resolve, reject) => {
     const channel = uuidv1() + uuidv4();
     input.channel = channel;
     input.creatorUsername = username;
-    const { groupUuid, ...chatInput } = input;
-    const chat = new Chat(chatInput);
-    const group = await getGroupByUuid(groupUuid);
+    const chat = new Chat(input);
+    // The constraint to prevent a creating a groupChat with the same
+    // title in the same group. -> Could possibly be refactored to a better
+    // location.
+    const results = await Chat.find({
+      groupUuid: input.groupUuid,
+      title: input.title
+    });
+    if (results.length != 0) {
+      new Error(`The title "${input.title}" already in use!`);
+      reject([
+        { key: 1, message: `The title "${input.title}" already in use!` }
+      ]);
+    }
+    const group = await getGroupByUuid(input.groupUuid);
     try {
       await chat.save();
       group.chats = [...group.chats, chat._id];
       await group.save();
       resolve(chat);
     } catch (e) {
-      console.log("Error saving chat: ", e);
-      reject(e.message);
+      // Any other failures will not necessarily appear under e.errors.title
+      console.log("Error saving chat: ", e.errors.title.message);
+      reject([{ key: 1, message: e.errors.title.message }]);
     }
   });
 };
@@ -163,9 +185,15 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
 
 const createGroupChatIfAuthorized = async (input, authorization) => {
   let createdChat;
+  let err;
   const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
-    createdChat = await createGroupChat(input, userId, username);
+    [err, createdChat] = await to(createGroupChat(input, userId, username));
+    console.log("The err: ", err);
+    console.log("The createdChat: ", createdChat);
+    if (err) {
+      return { errors: err, chat: null };
+    }
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
@@ -173,7 +201,7 @@ const createGroupChatIfAuthorized = async (input, authorization) => {
     // to get the user a new JWT for the decodeTokenError case.
     if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
-  return createdChat;
+  return { errors: null, chat: createdChat };
 };
 
 // !! For facilitating infinite scroll !!
