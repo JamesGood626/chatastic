@@ -53,7 +53,6 @@ const retrieveMessagesIfAuthorized = async (input, authorization) => {
     retrievedMessages = await Message.find(
       { cursor: { $gte: start, $lte: end } },
       result => {
-        console.log("These are the results: ", result);
         return result;
       }
     );
@@ -63,7 +62,6 @@ const retrieveMessagesIfAuthorized = async (input, authorization) => {
     // Will look into this later
     //  AND replacing this
     // retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
-    console.log("did retrieve messages: ", retrievedMessages);
   }
   return retrievedMessages;
 };

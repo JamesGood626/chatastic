@@ -118,14 +118,13 @@ describe("With Message resources a user may", () => {
     // user creation and login
     const createdUserResponse = await createAndLoginUser(
       createdRequest,
-      userTwo,
-      true
+      userTwo
     );
     token = createdUserResponse.authenticatedUser.token;
     // User creates a group
     const {
       group: { uuid }
-    } = await createGroupGQLRequest(createdRequest, token, groupInput, true);
+    } = await createGroupGQLRequest(createdRequest, token, groupInput);
     // groupUuid used for message pagination test (see below).
     groupUuid = uuid;
     groupChat.groupUuid = uuid;
@@ -156,20 +155,10 @@ describe("With Message resources a user may", () => {
   test("create a message in a group chat", async done => {
     const {
       message: { text: messageOneText, cursor: messageOneCursor }
-    } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageOne,
-      true
-    );
+    } = await createMessageGraphQLRequest(createdRequest, token, messageOne);
     const {
       message: { text: messageTwoText, cursor: messageTwoCursor }
-    } = await createMessageGraphQLRequest(
-      createdRequest,
-      token,
-      messageTwo,
-      true
-    );
+    } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
 
     expect(messageOneText).toBe("This is a message.");
     expect(messageOneCursor).toBe(1);

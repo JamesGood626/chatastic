@@ -54,7 +54,6 @@ const getDirectChatTestables = async username => {
   const groupActivities = await retrieveGroupActivitiesList(
     user.groupActivities
   );
-  console.log("DA GA: ", groupActivities);
   const directChats = await retrieveChatsList(groupActivities[0].directChats);
   const messages = await retrieveMessageList(directChats[0].messages);
   return { groupActivities, directChats, messages };

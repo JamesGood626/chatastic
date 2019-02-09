@@ -1,7 +1,8 @@
 const { pubsub, withFilter } = require("../../pubsub");
 const {
   createDirectChatIfAuthorized,
-  createGroupChatIfAuthorized
+  createGroupChatIfAuthorized,
+  updateGroupChatParticipationIfAuthorized
 } = require("../services");
 const { getUserById } = require("../../Accounts/services");
 const { retrieveMessageList } = require("../../Messages/services");
@@ -30,12 +31,21 @@ const resolvers = {
       { headers: { authorization } }
     ) => {
       const result = await createGroupChatIfAuthorized(input, authorization);
-      console.log("What you need: ", result);
       // pubsub.publish("MessageCreated", {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
       return { errors: result.errors, chat: result.chat };
+    },
+    updateGroupChatParticipation: async (
+      _parentValue,
+      { input },
+      { headers: { authorization } }
+    ) => {
+      return await updateGroupChatParticipationIfAuthorized(
+        input,
+        authorization
+      );
     }
   },
   Chat: {

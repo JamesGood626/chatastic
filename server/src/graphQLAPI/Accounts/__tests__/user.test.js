@@ -105,8 +105,7 @@ describe("With the User resource a user may issue a GraphQL request to", () => {
     } = await getUserByUsernameGQLRequest(
       createdRequest,
       token,
-      userSearchInput,
-      true
+      userSearchInput
     );
     expect(username).toBe(userSearchInput.username);
     done();

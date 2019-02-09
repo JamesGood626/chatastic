@@ -20,7 +20,8 @@ const {
 } = require("../../testHelpers/groupsRequest");
 const {
   createDirectChatGQLRequest,
-  createGroupChatGQLRequest
+  createGroupChatGQLRequest,
+  updateGroupChatParticipationGQLRequest
 } = require("../../testHelpers/chatsRequest");
 
 // NOTE!!!!! had to add groupUuid to accomodate checking whether
@@ -100,7 +101,7 @@ const createDirectChatTestSetup = async createdRequest => {
   directChat.groupUuid = groupUuid;
   directChat.senderUsername = senderUsername;
   directChat.recipientUsername = recipientUsername;
-  await createDirectChatGQLRequest(createdRequest, token, directChat, true);
+  await createDirectChatGQLRequest(createdRequest, token, directChat);
   // Just passing off the getting of the nested Mongo resources to a helper
   const {
     groupActivities: senderGroupActivities,
@@ -136,20 +137,15 @@ const groupChatCreationSetup = async (
   } = await createGroupGQLRequest(createdRequest, token, groupInput);
   groupChatInput.groupUuid = uuid;
   const {
-    chat: { title }
-  } = await createGroupChatGQLRequest(
-    createdRequest,
-    token,
-    groupChatInput,
-    true
-  );
+    chat: { title, channel }
+  } = await createGroupChatGQLRequest(createdRequest, token, groupChatInput);
   const getGroupInput = {
     groupUuid: uuid
   };
   const {
     group: { chats, members }
   } = await getGroupGQLRequest(createdRequest, getGroupInput);
-  return { uuid, title, chats, members };
+  return { uuid, title, chats, members, channel };
 };
 
 // Could go further with these tests by repeating this with a third user that's part of the same group, and then
@@ -158,6 +154,9 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
   let createdRequest;
   let server;
   let directChatTestData;
+  let groupOneUuid;
+  let groupTwoUuid;
+  let chatChannel;
   let chatTitle;
   let groupChats;
   let groupMembers;
@@ -168,24 +167,27 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     await createUserGQLRequest(createdRequest, userOne);
     await createUserGQLRequest(createdRequest, userTwo);
     const data = await createDirectChatTestSetup(createdRequest);
-    groupOneUuid = data.groupUuid;
     directChatTestData = data;
-    const { uuid, title, chats, members } = await groupChatCreationSetup(
+    const {
+      uuid,
+      title,
+      chats,
+      members,
+      channel
+    } = await groupChatCreationSetup(
       createdRequest,
       data.token,
       groupInput,
       groupChatInput
     );
+    groupOneUuid = data.groupUuid;
     groupTwoUuid = uuid;
     chatTitle = title;
+    chatChannel = channel;
     groupChats = chats;
     groupMembers = members;
     done();
   });
-
-  // afterEach(async done => {
-  //   done();
-  // });
 
   afterAll(async done => {
     await dropCollection(Message);
@@ -240,21 +242,35 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     done();
   });
 
-  // test("creating similar group chat titles in different groups doesn't cause an error", async done => {
-  //   // Use groupChat input using groupTwoUuid to create a similarly titled groupChat in different group.
-  //   // groupChatInput.groupUuid = groupTwoUuid;
-  //   const groupChatTwoInput = {
-  //     title: "Group Chat",
-  //     groupUuid: groupTwoUuid
-  //   };
-  //   const {
-  //     chat: { title }
-  //   } = await createGroupChatGQLRequest(
-  //     createdRequest,
-  //     directChatTestData.token,
-  //     groupChatTwoInput
-  //   );
-  //   expect(groupChatInput.title).toBe(title);
-  //   done();
-  // });
+  test("creating similar group chat titles in different groups doesn't cause an error", async done => {
+    // Use groupChat input using groupTwoUuid to create a similarly titled groupChat in different group.
+    // groupChatInput.groupUuid = groupTwoUuid;
+    const groupChatTwoInput = {
+      title: "Group Chat",
+      groupUuid: groupOneUuid
+    };
+    const {
+      chat: { title }
+    } = await createGroupChatGQLRequest(
+      createdRequest,
+      directChatTestData.token,
+      groupChatTwoInput
+    );
+    expect(groupChatInput.title).toBe(title);
+    done();
+  });
+
+  test("user can update whether they want to participate in a chat", async done => {
+    const data = await updateGroupChatParticipationGQLRequest(
+      createdRequest,
+      directChatTestData.token,
+      { groupUuid: groupTwoUuid, chatChannel }
+    );
+    expect(data.errors).toBe(null);
+    expect(data.chat).toBe(null);
+    expect(data.result).toBe("You've successfully left the chat!");
+    done();
+  });
+
+  // TODO -> Test that user can rejoin a chat that they previously left.
 });
