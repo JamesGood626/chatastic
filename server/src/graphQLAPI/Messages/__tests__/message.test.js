@@ -118,14 +118,13 @@ describe("With Message resources a user may", () => {
     // user creation and login
     const createdUserResponse = await createAndLoginUser(
       createdRequest,
-      userTwo,
-      true
+      userTwo
     );
     token = createdUserResponse.authenticatedUser.token;
     // User creates a group
     const {
       group: { uuid }
-    } = await createGroupGQLRequest(createdRequest, token, groupInput, true);
+    } = await createGroupGQLRequest(createdRequest, token, groupInput);
     // groupUuid used for message pagination test (see below).
     groupUuid = uuid;
     groupChat.groupUuid = uuid;
@@ -155,19 +154,16 @@ describe("With Message resources a user may", () => {
 
   test("create a message in a group chat", async done => {
     const {
-      errors: messageOneErrors,
       message: { text: messageOneText, cursor: messageOneCursor }
     } = await createMessageGraphQLRequest(createdRequest, token, messageOne);
     const {
-      errors: messageTwoErrors,
       message: { text: messageTwoText, cursor: messageTwoCursor }
     } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
+
     expect(messageOneText).toBe("This is a message.");
     expect(messageOneCursor).toBe(1);
     expect(messageTwoText).toBe("This is a followup message.");
     expect(messageTwoCursor).toBe(2);
-    expect(messageOneErrors).toBe(null);
-    expect(messageTwoErrors).toBe(null);
     done();
   });
 
@@ -187,7 +183,7 @@ describe("With Message resources a user may", () => {
     // THE TEST OF PAGINATION
     const getMessagesInput = {
       start: 1,
-      end: 4,
+      end: 3,
       chatChannel: chatChannel
     };
     const { messages } = await getMessagesByChatChannelGQLRequest(
@@ -195,7 +191,8 @@ describe("With Message resources a user may", () => {
       token,
       getMessagesInput
     );
-    expect(messages.length).toBe(4);
+    
+    expect(messages.length).toBe(3);
     expect(messages[0].cursor).toBe(1);
     expect(messages[1].cursor).toBe(2);
     done();

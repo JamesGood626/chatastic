@@ -20,6 +20,7 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
       channel
       senderUsername
       recipientUsername
+      participating
       messages {
         text
         sentDate
@@ -39,6 +40,20 @@ const createGroupChatMutation = `mutation createGroupChatOp($input: CreateGroupC
       title
       channel
     }
+    errors {
+      key
+      message
+    }
+  }
+}`;
+
+const updateGroupChatParticipationMutation = `mutation updateGroupChatParticipationOp($input: UpdateGroupChatParticipationInput!) {
+  updateGroupChatParticipation(input: $input) {
+    chat {
+      title
+      channel
+    }
+    result
     errors {
       key
       message
@@ -69,7 +84,12 @@ const createDirectChatGQLRequest = async (
     operationInfo,
     token
   );
-  if (debug) console.log("createDirectChat response body: ", response.body);
+  if (debug) {
+    console.log(
+      "createDirectChat response body: ",
+      response.body.data.createDirectChat.chat
+    );
+  }
   return response.body.data.createDirectChat;
 };
 
@@ -93,7 +113,29 @@ const createGroupChatGQLRequest = async (
   return response.body.data.createGroupChat;
 };
 
+const updateGroupChatParticipationGQLRequest = async (
+  createdRequest,
+  token,
+  input,
+  debug = false
+) => {
+  const operationInfo = await graphQLMutationRequest(
+    updateGroupChatParticipationMutation,
+    "updateGroupChatParticipationOp",
+    input
+  );
+  const response = await postRequestWithHeaders(
+    createdRequest,
+    operationInfo,
+    token
+  );
+  if (debug)
+    console.log("updateGroupChatParticipation response body: ", response.body);
+  return response.body.data.updateGroupChatParticipation;
+};
+
 module.exports = {
   createDirectChatGQLRequest: createDirectChatGQLRequest,
-  createGroupChatGQLRequest: createGroupChatGQLRequest
+  createGroupChatGQLRequest: createGroupChatGQLRequest,
+  updateGroupChatParticipationGQLRequest: updateGroupChatParticipationGQLRequest
 };

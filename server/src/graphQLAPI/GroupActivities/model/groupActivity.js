@@ -16,6 +16,12 @@ const groupActivitySchema = new Schema({
       ref: "Chat",
       requried: true
     }
+  ],
+  groupChatParticipationBlacklist: [
+    {
+      type: "String",
+      required: true
+    }
   ]
 });
 

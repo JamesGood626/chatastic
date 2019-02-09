@@ -27,6 +27,9 @@ const queryTypeDef = gql`
     ): GroupInvitationResult
     createDirectChat(input: CreateDirectChatInput!): ChatResult
     createGroupChat(input: CreateGroupChatInput!): ChatResult
+    updateGroupChatParticipation(
+      input: UpdateGroupChatParticipationInput
+    ): UpdateGroupChatParticipationResult
     createMessageInExistingChat(
       input: createMessageInExistingChatInput!
     ): MessageResult

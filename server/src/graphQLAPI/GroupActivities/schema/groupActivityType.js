@@ -8,12 +8,14 @@ const { gql } = require("apollo-server-express");
 // This seems like a good spot to put this -> [sentGroupInvitations]
 // Having the received/sent GroupInvitations on AuthenticatedUser
 // will help with displaying those separate pieces of data in the UI.
+// The string in the excludedGroupChats array will be the chat's channel.
 const GroupActivityTypeDef = gql`
   type GroupActivity {
     id: String!
     uuid: String!
     groupUuid: String!
     directChats: [Chat]
+    groupChatParticipationBlacklist: [String]
   }
 `;
 // I would think that adding a directCalls array would be suitable here for that feature.

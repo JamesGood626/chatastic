@@ -23,13 +23,14 @@ const createGroupActivity = input => {
   });
 };
 
+// room for optimizing in a future refactor/using mongoose update
 const addGroupActivity = async (user, groupUuid) => {
   const input = {
     groupUuid,
     uuid: uuidv4()
   };
   const createdGroupActivity = await createGroupActivity(input);
-  user.groupActivities = [createdGroupActivity._id, ...user.groupActivities];
+  user.groupActivities = [...user.groupActivities, createdGroupActivity._id];
   return user;
 };
 

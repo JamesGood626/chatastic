@@ -1,3 +1,4 @@
+const { to } = require("await-to-js");
 const uuidv1 = require("uuid/v1");
 const uuidv4 = require("uuid/v4");
 const Chat = require("../model/chat");
@@ -31,22 +32,45 @@ const createDirectChat = (input, messageId) => {
   });
 };
 
+// Ahhhh, to enforce that the same group can't have duplicate named group chat title's
+// with the current implementation I'd need to query for the array of groupChats
+// AND THEN filter to see if that name is in there.
+// OR I can do that MongoDB trigger/check enforcement thing of which the name currently
+// escapes me, but that would be the cleanest option I think?
+// This matters so it must be done.
+
+// But it'll be done later... But as of now this is breaking many tests.†
 const createGroupChat = (input, userId, username) => {
   return new Promise(async (resolve, reject) => {
     const channel = uuidv1() + uuidv4();
     input.channel = channel;
     input.creatorUsername = username;
-    const { groupUuid, ...chatInput } = input;
-    const chat = new Chat(chatInput);
-    const group = await getGroupByUuid(groupUuid);
+    const chat = new Chat(input);
+    // The constraint to prevent a creating a groupChat with the same
+    // title in the same group. -> Could possibly be refactored to a better
+    // location.
+    const results = await Chat.find({
+      groupUuid: input.groupUuid,
+      title: input.title
+    });
+    if (results.length != 0) {
+      new Error(`The title "${input.title}" already in use!`);
+      reject([
+        {
+          key: "wth should go in the key again?",
+          message: `The title "${input.title}" already in use!`
+        }
+      ]);
+    }
+    const group = await getGroupByUuid(input.groupUuid);
     try {
       await chat.save();
       group.chats = [...group.chats, chat._id];
       await group.save();
       resolve(chat);
     } catch (e) {
-      console.log("Error saving chat: ", e);
-      reject(e.message);
+      // Any other failures will not necessarily appear under e.errors.title
+      reject([{ key: 1, message: e.errors.title.message }]);
     }
   });
 };
@@ -163,9 +187,13 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
 
 const createGroupChatIfAuthorized = async (input, authorization) => {
   let createdChat;
+  let err;
   const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
-    createdChat = await createGroupChat(input, userId, username);
+    [err, createdChat] = await to(createGroupChat(input, userId, username));
+    if (err) {
+      return { errors: err, chat: null };
+    }
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
     if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
@@ -173,7 +201,7 @@ const createGroupChatIfAuthorized = async (input, authorization) => {
     // to get the user a new JWT for the decodeTokenError case.
     if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
-  return createdChat;
+  return { errors: null, chat: createdChat };
 };
 
 // !! For facilitating infinite scroll !!
@@ -194,10 +222,92 @@ const retrieveChatsList = async chatIdArr => {
   }
 };
 
+const updateGroupChatParticipationIfAuthorized = async (
+  input,
+  authorization
+) => {
+  let chat;
+  let err;
+  const { userId, username, errors, groupActivities } = await authorizeRequest(
+    authorization
+  );
+  if (userId) {
+    [err, chat] = await to(
+      updateGroupChatParticipation(input, groupActivities)
+    );
+    if (err) {
+      return { errors: err, result: null, chat: null };
+    }
+  } else {
+    const { decodeTokenError, expiredTokenError } = errors;
+    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+    // Use apollo client httpLinks auto refetch functionality
+    // to get the user a new JWT for the decodeTokenError case.
+    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  }
+  if (!chat) {
+    return {
+      errors: null,
+      result: "You've successfully left the chat!",
+      chat: null
+    };
+  }
+  return {
+    errors: null,
+    result: "You've successfully rejoined the chat!",
+    chat
+  };
+};
+
+const updateGroupChatParticipation = async (input, groupActivities) => {
+  const [err, groupActivitiesList] = await to(
+    retrieveGroupActivitiesList(groupActivities)
+  );
+  // Need to filter for the groupActivity for which group this chat belongs to.
+  const correspondingGroupActivity = groupActivitiesList.filter(ga => {
+    if (ga.groupUuid !== input.groupUuid) {
+      return false;
+    }
+    return true;
+  });
+  const location = correspondingGroupActivity[0].groupChatParticipationBlacklist.indexOf(
+    input.chatChannel
+  );
+  let errTwo;
+  let chat;
+  if (location === -1) {
+    // Add it to the array since it's not already in the array
+    correspondingGroupActivity[0].groupChatParticipationBlacklist = [
+      ...correspondingGroupActivity[0].groupChatParticipationBlacklist,
+      input.chatChannel
+    ];
+  } else {
+    // chatChannel is already in the array, so we remove it.
+    correspondingGroupActivity[0].splice(location, 1);
+    [errTwo, chat] = await to(getChatByChannel(input.chatChannel));
+  }
+  correspondingGroupActivity[0].save();
+  if (chat !== null) {
+    // the return value for when the chat is removed from the blacklist.
+    return Promise.resolve(chat);
+  }
+  return Promise.resolve(null);
+  //
+  // DO I WANT TO RETURN AN ARRAY OF THE BLACKLIST TO EASE HOW EASY IT IS
+  // TO TEST THAT THE OPERATION WAS SUCCESSFUL?
+  // I THINK YES.
+  // But, it could probably just be handled with a unit test as well for the
+  // entire block of code after the comment for checking if chatChannel is already
+  // in the array.
+  // For now... I don't concern myself with this detail.
+  //
+};
+
 module.exports = {
   createDirectChat: createDirectChat,
   createDirectChatIfAuthorized: createDirectChatIfAuthorized,
   createGroupChatIfAuthorized: createGroupChatIfAuthorized,
+  updateGroupChatParticipationIfAuthorized: updateGroupChatParticipationIfAuthorized,
   getChatByChannel: getChatByChannel,
   retrieveChatsList: retrieveChatsList
 };

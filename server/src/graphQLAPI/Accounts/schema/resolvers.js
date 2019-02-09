@@ -24,7 +24,6 @@ const resolvers = {
       { input: { username } },
       { headers: { authorization } }
     ) => {
-      console.log("IT WORKED");
       const user = await getUserByUsernameIfAuthorized(
         username,
         authorization,
@@ -35,13 +34,10 @@ const resolvers = {
   },
   Mutation: {
     createUser: async (_parentValue, { input }, _context) => {
-      // const data = await createUser(input);
       return { errors: null, authenticatedUser: await createUser(input) };
     },
     loginUser: async (_parentValue, { input }, { req }) => {
       return { errors: null, authenticatedUser: await loginUser(input, req) };
-
-      // return await loginUser(input, req);
     }
   },
   Subscription: {

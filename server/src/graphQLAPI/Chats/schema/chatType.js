@@ -12,10 +12,18 @@ const ChatTypeDef = gql`
     creatorUsername: String!
     senderUsername: String!
     recipientUsername: String!
+    groupUuid: String!
     messages: [Message]
+    participating: Boolean!
   }
 
   type ChatResult {
+    chat: Chat
+    errors: [InputError]
+  }
+
+  type UpdateGroupChatParticipationResult {
+    result: String!
     chat: Chat
     errors: [InputError]
   }
@@ -30,6 +38,11 @@ const ChatTypeDef = gql`
   input CreateGroupChatInput {
     groupUuid: String!
     title: String!
+  }
+
+  input UpdateGroupChatParticipationInput {
+    groupUuid: String!
+    chatChannel: String!
   }
 `;
 
