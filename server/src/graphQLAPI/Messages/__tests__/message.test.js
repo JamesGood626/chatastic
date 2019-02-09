@@ -191,6 +191,7 @@ describe("With Message resources a user may", () => {
       token,
       getMessagesInput
     );
+    
     expect(messages.length).toBe(3);
     expect(messages[0].cursor).toBe(1);
     expect(messages[1].cursor).toBe(2);
