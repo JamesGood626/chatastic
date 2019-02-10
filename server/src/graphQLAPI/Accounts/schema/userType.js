@@ -52,6 +52,7 @@ const UserTypeDef = gql`
 
   type UserSearchResult {
     user: Invitee
+    message: String
     errors: [InputError]
   }
 
