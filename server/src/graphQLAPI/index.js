@@ -19,8 +19,8 @@ const queryTypeDef = gql`
     declineGroupInvitation(
       input: DeclineGroupInvitationInput
     ): DeclinedStatusResult
-    createUser(input: CreateUserInput!): AuthenticatedUserResult
     loginUser(input: LoginUserInput!): AuthenticatedUserResult
+    createUser(input: CreateUserInput!): AuthenticatedUserResult
     createGroup(input: CreateGroupInput!): GroupResult
     createGroupInvitation(
       input: CreateGroupInvitationInput!

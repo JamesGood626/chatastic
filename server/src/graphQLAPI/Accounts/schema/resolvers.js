@@ -24,20 +24,19 @@ const resolvers = {
       { input: { username } },
       { headers: { authorization } }
     ) => {
-      const user = await getUserByUsernameIfAuthorized(
+      return await getUserByUsernameIfAuthorized(
         username,
         authorization,
         authorizeRequest
       );
-      return { errors: null, user };
     }
   },
   Mutation: {
     createUser: async (_parentValue, { input }, _context) => {
-      return { errors: null, authenticatedUser: await createUser(input) };
+      return await createUser(input);
     },
-    loginUser: async (_parentValue, { input }, { req }) => {
-      return { errors: null, authenticatedUser: await loginUser(input, req) };
+    loginUser: async (_parentValue, { input }, _context) => {
+      return await loginUser(input);
     }
   },
   Subscription: {
