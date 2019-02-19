@@ -5,7 +5,7 @@ const { dropCollection } = require("../../testHelpers");
 const User = require("../../Accounts/model/user");
 const Group = require("../../Groups/model/group");
 const Chat = require("../../Chats/model/chat");
-const Message = require("../model/message");
+const { Message, MessageEdge } = require("../model/message");
 const { createAndLoginUser } = require("../../testHelpers/accountsOperations");
 const { createUserGQLRequest } = require("../../testHelpers/accountsRequest");
 const {
@@ -19,7 +19,6 @@ const {
   createDirectChatGQLRequest,
   createGroupChatGQLRequest
 } = require("../../testHelpers/chatsRequest");
-// Todo -> create a messageRequest.js helper test file.
 const {
   graphQLMutationRequest,
   postRequestWithHeaders
@@ -70,10 +69,12 @@ const createMessageMutation = `mutation createMessageInExistingChatOp($input: cr
                                     key
                                     message
                                   }
-                                  message {
-                                    channel
-                                    text
-                                    senderUsername
+                                  messageEdge {
+                                    node {
+                                      channel
+                                      text
+                                      senderUsername
+                                    }
                                     cursor
                                   }
                                 }
@@ -141,12 +142,9 @@ describe("With Message resources a user may", () => {
     done();
   });
 
-  // beforeEach(async done => {
-  //   done();
-  // });
-
   afterAll(async done => {
     await dropCollection(Message);
+    await dropCollection(MessageEdge);
     await dropCollection(Chat);
     await dropCollection(Group);
     await server.close(done);
@@ -154,10 +152,16 @@ describe("With Message resources a user may", () => {
 
   test("create a message in a group chat", async done => {
     const {
-      message: { text: messageOneText, cursor: messageOneCursor }
+      messageEdge: {
+        cursor: messageOneCursor,
+        node: { text: messageOneText }
+      }
     } = await createMessageGraphQLRequest(createdRequest, token, messageOne);
     const {
-      message: { text: messageTwoText, cursor: messageTwoCursor }
+      messageEdge: {
+        cursor: messageTwoCursor,
+        node: { text: messageTwoText }
+      }
     } = await createMessageGraphQLRequest(createdRequest, token, messageTwo);
 
     expect(messageOneText).toBe("This is a message.");
@@ -167,6 +171,7 @@ describe("With Message resources a user may", () => {
     done();
   });
 
+  // TODO: still need to refactor this:
   test("retrieve paginated message.", async done => {
     const getGroupInput = {
       groupUuid: groupUuid
@@ -174,27 +179,28 @@ describe("With Message resources a user may", () => {
     const {
       group: { chats }
     } = await getGroupGQLRequest(createdRequest, getGroupInput);
-    expect(chats[0].messages.length).toBe(2);
+    expect(chats[0].messages.edges.length).toBe(2);
 
     await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     await createMessageGraphQLRequest(createdRequest, token, messageTwo);
     await createMessageGraphQLRequest(createdRequest, token, messageTwo);
 
     // THE TEST OF PAGINATION
-    const getMessagesInput = {
+    const getMessagesByChatChannelInput = {
       start: 1,
       end: 3,
       chatChannel: chatChannel
     };
-    const { messages } = await getMessagesByChatChannelGQLRequest(
+    const {
+      messageConnection: { edges }
+    } = await getMessagesByChatChannelGQLRequest(
       createdRequest,
       token,
-      getMessagesInput
+      getMessagesByChatChannelInput
     );
-    
-    expect(messages.length).toBe(3);
-    expect(messages[0].cursor).toBe(1);
-    expect(messages[1].cursor).toBe(2);
+    expect(edges.length).toBe(3);
+    expect(edges[0].cursor).toBe(1);
+    expect(edges[1].cursor).toBe(2);
     done();
   });
 

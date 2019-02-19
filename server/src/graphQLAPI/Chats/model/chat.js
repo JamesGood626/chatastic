@@ -57,7 +57,7 @@ const chatSchema = new Schema({
   messages: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Message"
+      ref: "MessageEdge"
     }
   ]
 });

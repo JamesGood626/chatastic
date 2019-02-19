@@ -53,8 +53,8 @@ const resolvers = {
     // creator: async ({ user }, _args, _context) => {
     //   return await getUserById(user);
     // },
-    messages: async ({ messages }, _args, _context) => {
-      return await retrieveMessageList(messages);
+    messages: async (parentValue, _args, _context) => {
+      return await retrieveMessageList(parentValue.messages);
     }
   }
   // Subscription: {

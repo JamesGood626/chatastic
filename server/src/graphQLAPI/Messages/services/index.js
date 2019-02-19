@@ -1,15 +1,21 @@
-const Message = require("../model/message");
+const { Message, MessageEdge } = require("../model/message");
 const authorizeRequest = require("../../authorization");
 const { getChatByChannel } = require("../../Chats/services");
 
-const createMessage = (input, chat) => {
+const createMessage = (input, newCursor = 1) => {
   return new Promise(async (resolve, reject) => {
     const message = new Message(input);
+    const messageEdgeInput = {
+      cursor: newCursor,
+      node: message
+    };
+    const messageEdge = new MessageEdge(messageEdgeInput);
     try {
       await message.save();
-      resolve(message);
+      await messageEdge.save();
+      resolve(messageEdge);
     } catch (e) {
-      console.log("Error saving message: ", e);
+      console.log("Error saving messageEdge: ", e);
       reject(e.message);
     }
   });
@@ -17,17 +23,18 @@ const createMessage = (input, chat) => {
 
 // Refactor
 const createMessageIfAuthorized = async (input, authorization) => {
-  let createdMessage;
+  let createdMessageEdge;
   const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
+    // console.log("THE CHAT FOR CHAT.MESSAGES: ", chat);
     const length = chat.messages.length;
-    messageInput.cursor = length + 1;
+    const newCursor = length + 1;
     messageInput.senderUsername = username;
     messageInput.channel = chatChannel;
-    createdMessage = await createMessage(messageInput);
-    chat.messages = [...chat.messages, createdMessage];
+    createdMessageEdge = await createMessage(messageInput, newCursor);
+    chat.messages = [...chat.messages, createdMessageEdge];
     await chat.save();
   } else {
     const { decodeTokenError, expiredTokenError } = errors;
@@ -36,48 +43,77 @@ const createMessageIfAuthorized = async (input, authorization) => {
     // to get the user a new JWT for the decodeTokenError case.
     if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
-  return createdMessage;
+  return {
+    errors: null,
+    messageEdge: createdMessageEdge
+  };
+  // Promise.resolve();
 };
 
 // The service function that makes pagination possible
-const retrieveMessagesIfAuthorized = async (input, authorization) => {
-  let retrievedMessages;
+const getMessagesIfAuthorized = async (input, authorization) => {
+  let retrievedMessageEdges;
+  const { start, end, chatChannel } = input;
   const { userId, username, errors } = await authorizeRequest(authorization);
   if (userId) {
-    const { start, end, chatChannel } = input;
-    // replacing this
-    // retrievedMessages = await Message.find({
-    //   channel: chatChannel
-    // });
-
-    retrievedMessages = await Message.find(
+    retrievedMessageEdges = await MessageEdge.find(
       { cursor: { $gte: start, $lte: end } },
       result => {
         return result;
       }
-    );
-    // THIS COULD WORK. using start - 1 && end - 1
-    // HOWEVER, the cleaner solution would be to use some query
-    // filters provided by mongoose, but you know... the documentation kind of sucks
-    // Will look into this later
-    //  AND replacing this
-    // retrievedMessages = retrievedMessages.slice(start - 1, end - 1);
+    )
+      .populate("node")
+      .exec();
   }
-  return retrievedMessages;
+  const count = await MessageEdge.count({});
+  const pageInfo = {
+    hasNextPage: count > end ? true : false,
+    hasPreviousPage: start > 0 ? true : false
+  };
+  return {
+    edges: retrievedMessageEdges,
+    pageInfo
+  };
 };
 
-const retrieveMessageList = async messageIdArr => {
-  if (messageIdArr.length > 1) {
-    return await Message.find({ _id: { $in: messageIdArr } });
+// LAST LEFT OFF HERE:
+// OKAY, everything is passing test wise now... But I still need to modify the message retrieval for existing
+// chats -> i.e. the infinite scroll pagination query. This will require tweaking the pageInfo
+// that is being returned from this function.. and perhaps in another custom function
+// for retrieving the list from a start and end provided as params to the GraphQL Query.
+// ahhh... this retrieveMessageList is always the first to run... So it by default should always only
+// retrieve the first 20-25 messages or something like that.
+const retrieveMessageList = async messageEdgeIdArr => {
+  const query = {
+    cursor: { $gte: 0, $lte: 20 }
+  };
+  let messageEdge;
+  if (messageEdgeIdArr.length > 1) {
+    query._id = { $in: messageEdgeIdArr };
+    messageEdge = await MessageEdge.find(query)
+      .populate("node")
+      .exec();
   } else {
-    const message = await Message.findById(messageIdArr[0]);
-    return [message];
+    query._id = messageEdgeIdArr[0];
+    messageEdge = await MessageEdge.find(query)
+      .populate("node")
+      .exec();
   }
+  const count = await MessageEdge.count({});
+  const pageInfo = {
+    hasNextPage: count > 20 ? true : false,
+    hasPreviousPage: false
+  };
+  return {
+    // edges is an array
+    edges: messageEdge,
+    pageInfo
+  };
 };
 
 module.exports = {
-  createMessage: createMessage,
-  createMessageIfAuthorized: createMessageIfAuthorized,
-  retrieveMessagesIfAuthorized: retrieveMessagesIfAuthorized,
-  retrieveMessageList: retrieveMessageList
+  createMessage,
+  createMessageIfAuthorized,
+  getMessagesIfAuthorized,
+  retrieveMessageList
 };

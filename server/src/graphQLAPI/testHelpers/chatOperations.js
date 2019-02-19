@@ -55,8 +55,8 @@ const getDirectChatTestables = async username => {
     user.groupActivities
   );
   const directChats = await retrieveChatsList(groupActivities[0].directChats);
-  const messages = await retrieveMessageList(directChats[0].messages);
-  return { groupActivities, directChats, messages };
+  const messageConnection = await retrieveMessageList(directChats[0].messages);
+  return { groupActivities, directChats, messageConnection };
 };
 
 module.exports = {

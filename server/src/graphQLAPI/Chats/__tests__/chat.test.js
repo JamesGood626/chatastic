@@ -4,7 +4,7 @@ const { httpServer } = require("../../../app");
 const User = require("../../Accounts/model/user");
 const Group = require("../../Groups/model/group");
 const Chat = require("../model/chat");
-const Message = require("../../Messages/model/message");
+const { Message, MessageEdge } = require("../../Messages/model/message");
 const { dropCollection } = require("../../testHelpers");
 const {
   chatCreationTestFixtureSetup,
@@ -106,12 +106,12 @@ const createDirectChatTestSetup = async createdRequest => {
   const {
     groupActivities: senderGroupActivities,
     directChats: senderDirectChats,
-    messages: senderDirectChatMessages
+    messageConnection: senderDirectChatMessages
   } = await getDirectChatTestables(senderUsername);
   const {
     groupActivities: recipientGroupActivities,
     directChats: recipientDirectChats,
-    messages: recipientDirectChatMessages
+    messageConnection: recipientDirectChatMessages
   } = await getDirectChatTestables(recipientUsername);
   return {
     token,
@@ -148,6 +148,13 @@ const groupChatCreationSetup = async (
   return { uuid, title, chats, members, channel };
 };
 
+const dropAll = async () => {
+  await dropCollection(MessageEdge);
+  await dropCollection(Chat);
+  await dropCollection(Group);
+  await dropCollection(User);
+};
+
 // Could go further with these tests by repeating this with a third user that's part of the same group, and then
 // ensuring that he isn't able to see any of the direct messages between two users.
 describe("With the Chat resource a user may issue a GraphQL request to", () => {
@@ -164,6 +171,7 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
   beforeAll(async done => {
     server = await httpServer.listen(3001);
     createdRequest = await request.agent(server);
+    await dropAll();
     await createUserGQLRequest(createdRequest, userOne);
     await createUserGQLRequest(createdRequest, userTwo);
     const data = await createDirectChatTestSetup(createdRequest);
@@ -190,15 +198,14 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
   });
 
   afterAll(async done => {
-    await dropCollection(Message);
-    await dropCollection(Chat);
-    await dropCollection(Group);
-    await dropCollection(User);
+    // await dropAll();
     await server.close(done);
   });
 
   test("create a direct chat", async done => {
     const data = directChatTestData;
+    const senderDirectChatMessages = data.senderDirectChatMessages.edges;
+    const recipientDirectChatMessages = data.recipientDirectChatMessages.edges;
     // groupActivities checks
     expect(data.senderGroupActivities.length).toBe(1);
     expect(data.recipientGroupActivities.length).toBe(1);
@@ -210,12 +217,12 @@ describe("With the Chat resource a user may issue a GraphQL request to", () => {
     expect(data.senderDirectChats[0].senderUsername).toBe("BamBamSar");
     expect(data.recipientDirectChats[0].senderUsername).toBe("BamBamSar");
     // messages checks
-    expect(data.senderDirectChatMessages.length).toBe(1);
-    expect(data.recipientDirectChatMessages.length).toBe(1);
-    expect(data.senderDirectChatMessages[0].text).toBe(
+    expect(senderDirectChatMessages.length).toBe(1);
+    expect(recipientDirectChatMessages.length).toBe(1);
+    expect(senderDirectChatMessages[0].node.text).toBe(
       "The start of something amazing."
     );
-    expect(data.recipientDirectChatMessages[0].text).toBe(
+    expect(recipientDirectChatMessages[0].node.text).toBe(
       "The start of something amazing."
     );
     done();

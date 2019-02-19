@@ -75,6 +75,10 @@ describe("With the Group resource a user may issue a GraphQL request to", () => 
     done();
   });
 
+  // This operation is only necessary for when a user accepts a groupInvitation
+  // in order to immediately display this group's title in the UI and have a reference
+  // to it's uuid for later retrieving messages if the group is selected by the user in the
+  // UI.
   test("get group by uuid", async done => {
     const getGroupInput = {
       groupUuid

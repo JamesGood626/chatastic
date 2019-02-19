@@ -13,7 +13,7 @@ const ChatTypeDef = gql`
     senderUsername: String!
     recipientUsername: String!
     groupUuid: String!
-    messages: [Message]
+    messages: MessageConnection
     participating: Boolean!
   }
 

@@ -1,23 +1,23 @@
 const { pubsub, withFilter } = require("../../pubsub");
 const {
   createMessageIfAuthorized,
-  retrieveMessagesIfAuthorized
+  getMessagesIfAuthorized
 } = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
 // commit auth fail
 const resolvers = {
   Query: {
-    retrieveMessagesByChatChannel: async (
+    getMessagesByChatChannel: async (
       _parentValue,
       { input },
       { headers: { authorization } }
     ) => {
-      const retrievedMessages = await retrieveMessagesIfAuthorized(
+      const messageConnection = await getMessagesIfAuthorized(
         input,
         authorization
       );
-      return { errors: null, messages: retrievedMessages };
+      return { errors: null, messageConnection };
     }
   },
   Mutation: {
@@ -26,17 +26,27 @@ const resolvers = {
       { input },
       { headers: { authorization } }
     ) => {
-      const createdMessage = await createMessageIfAuthorized(
-        input,
-        authorization
-      );
+      return await createMessageIfAuthorized(input, authorization);
       // pubsub.publish("MessageCreated", {
       //   MessageCreated: createdMessage,
       //   channelId: createdMessage.channelId
       // });
-      return { errors: null, message: createdMessage };
     }
   }
+  // MessageConnection: {
+  //   // Removed in 12/15/18 refactor.
+  //   // creator: async ({ user }, _args, _context) => {
+  //   //   return await getUserById(user);
+  //   // },
+  //   edges: async (parentValue, _args, _context) => {
+  //     console.log(
+  //       "THE PARENT VALUE IN MESSAGE CONNECTION edges: ",
+  //       parentValue.edges[0].node
+  //     );
+  //     return null;
+  //     // return await retrieveMessageList(parentValue.messages);
+  //   }
+  // }
 
   // Message: {
   // sender: async ({ sender }, _args, _context) => {
