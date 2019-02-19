@@ -22,9 +22,16 @@ const createDirectChatMutation = `mutation createDirectChatOp($input: CreateDire
       recipientUsername
       participating
       messages {
-        text
-        sentDate
-        senderUsername
+        edges {
+          cursor
+          node {
+            text
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+        }
       }
     }
     errors {

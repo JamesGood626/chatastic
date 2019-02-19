@@ -11,7 +11,7 @@ const customDateScalarType = new GraphQLScalarType({
     return value.getTime(); // value sent to the client
   },
   parseLiteral(ast) {
-    console.log("THIS IS KIND: ", Kind);
+    // console.log("THIS IS KIND: ", Kind);
     if (ast.kind === Kind.INT) {
       return new Date(parseInt(ast.value, 10)); // ast value is always in string format
     }

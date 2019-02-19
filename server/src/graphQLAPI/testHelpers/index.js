@@ -68,35 +68,3 @@ module.exports = {
   postRequestWithHeaders: postRequestWithHeaders,
   dropCollection: dropCollection
 };
-
-// const dropGroupCollection = async () => {
-//   await Group.deleteMany({}, err => {
-//     if (err !== null) {
-//       console.log("Group Collection Drop Error: ", err);
-//     }
-//   });
-// };
-
-// const dropGroupInvitationCollection = async () => {
-//   await Group.deleteMany({}, err => {
-//     if (err !== null) {
-//       console.log("Group Invitation Collection Drop Error: ", err);
-//     }
-//   });
-// };
-
-// const dropChatCollection = async () => {
-//   await Chat.deleteMany({}, err => {
-//     if (err !== null) {
-//       console.log("Chat Collection Drop Error: ", err);
-//     }
-//   });
-// };
-
-// const dropMessageCollection = async () => {
-//   await Message.remove({}, err => {
-//     if (err !== null) {
-//       console.log("Message Collection Drop Error: ", err);
-//     }
-//   });
-// };

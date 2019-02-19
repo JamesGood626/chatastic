@@ -35,8 +35,18 @@ const getGroupQuery = `query getGroupOp($input: GetGroupInput!) {
       title
       chats {
         title
+        channel
         messages {
-          text
+          edges {
+            cursor
+            node {
+              text
+            }
+          }
+          pageInfo {
+            hasNextPage
+            hasPreviousPage
+          }
         }
       }
       members {

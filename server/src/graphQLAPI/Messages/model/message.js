@@ -17,15 +17,29 @@ const messageSchema = new Schema({
   },
   senderUsername: {
     type: String
-  },
+  }
+  // cursor: {
+  //   type: Number,
+  //   required: true
+  // }
+});
+
+const messageEdgeSchema = new Schema({
   cursor: {
     type: Number,
-    required: true,
-    default: 1
+    required: true
+  },
+  node: {
+    type: Schema.Types.ObjectId,
+    ref: "Message"
   }
 });
 
 const Message =
   mongoose.models.Message || mongoose.model("Message", messageSchema);
 
-module.exports = Message;
+const MessageEdge =
+  mongoose.models.MessageEdge ||
+  mongoose.model("MessageEdge", messageEdgeSchema);
+
+module.exports = { Message, MessageEdge };

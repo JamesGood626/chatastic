@@ -13,16 +13,41 @@ const {
  *
  *
  */
-const retrieveMessagesQuery = `query retrieveMessagesByChatChannelOp($input: RetrieveMessagesInput!) {
-  retrieveMessagesByChatChannel(input: $input) {
+// expected return shape
+// const messageResult = {
+//   errors: null,
+//   // type MessageConnection instance
+//   messageconnection: {
+//     edges: [
+//       // type MessageEdge instances
+//       { cursor: 1, node: { text: "message one" } },
+//       { cursor: 2, node: { text: "message two" } }
+//     ],
+//     pageInfo: {
+//       // type PageInfo instance
+//       hasNextPage: true,
+//       hasPreviousPage: false
+//     }
+//   }
+// };
+
+const getMessagesByChatChannelQuery = `query getMessagesByChatChannelOp($input: getMessagesByChatChannelInput!) {
+  getMessagesByChatChannel(input: $input) {
     errors {
       key
       message
     }
-    messages {
-      channel
-      text
-      cursor
+    messageConnection {
+      edges {
+        cursor
+        node {
+          text
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+      }
     }
   }
 }`;
@@ -37,13 +62,13 @@ const retrieveMessagesQuery = `query retrieveMessagesByChatChannelOp($input: Ret
 const getMessagesByChatChannelGQLRequest = async (
   createdRequest,
   token,
-  retrieveMessagesInput,
+  getMessagesByChatChannelInput,
   debug = false
 ) => {
   const operationInfo = await graphQLQueryWithVariablesRequest(
-    retrieveMessagesQuery,
-    "retrieveMessagesByChatChannelOp",
-    retrieveMessagesInput
+    getMessagesByChatChannelQuery,
+    "getMessagesByChatChannelOp",
+    getMessagesByChatChannelInput
   );
   const response = await postRequestWithHeaders(
     createdRequest,
@@ -51,9 +76,9 @@ const getMessagesByChatChannelGQLRequest = async (
     token
   );
   if (debug) {
-    console.log("Retrieve message list response body: ", response.body);
+    console.log("Get message list response body: ", response.body);
   }
-  return response.body.data.retrieveMessagesByChatChannel;
+  return response.body.data.getMessagesByChatChannel;
 };
 
 module.exports = {

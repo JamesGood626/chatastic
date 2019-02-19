@@ -1,15 +1,18 @@
 const { gql } = require("apollo-server-express");
 
-// createMessage(input: MessageInExistingChatInput!): Message
+// retrieveMessagesByChatChannel(
+//   input: RetrieveMessagesInput
+// ): PaginatedMessagesResult
+
 // commit auth fail
 const queryTypeDef = gql`
   type Query {
     allUsers: [Bull]
     getGroup(input: GetGroupInput): GroupResult
     getUserByUsername(input: UserSearchInput!): UserSearchResult
-    retrieveMessagesByChatChannel(
-      input: RetrieveMessagesInput
-    ): PaginatedMessagesResult
+    getMessagesByChatChannel(
+      input: getMessagesByChatChannelInput
+    ): PaginatedMessagesResult!
   }
 
   type Mutation {
@@ -42,6 +45,11 @@ const queryTypeDef = gql`
   type InputError {
     key: String!
     message: String!
+  }
+
+  type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
   }
 `;
 

@@ -49,11 +49,6 @@ const loginUserMutation = `mutation loginUserOp($input: LoginUserInput!) {
         directChats {
           channel
           title
-          messages {
-            text
-            sentDate
-            senderUsername
-          }
         }
       }
       groupInvitations {
