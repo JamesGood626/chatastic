@@ -38,17 +38,17 @@ const GroupInvitationTypeDef = gql`
 
   type GroupInvitationResult {
     groupInvitation: GroupInvitation
-    errors: [InputError]
+    errors: [UserError]
   }
 
   type AcceptedStatusResult {
     acceptedStatus: AcceptedStatus
-    errors: [InputError]
+    errors: [UserError]
   }
 
   type DeclinedStatusResult {
     declinedStatus: DeclinedStatus
-    errors: [InputError]
+    errors: [UserError]
   }
 `;
 

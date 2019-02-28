@@ -26,13 +26,19 @@ const createJWToken = userCredentials => {
 const verifyUserAuthenticationResult = (user, err, resolve, reject) => {
   if (err) {
     reject({
-      errors: { key: "?", message: UNEXPECTED_LOGIN_ERR_MESSAGE },
+      errors: {
+        // Create custom codes to which client can
+        // match against for rendering particular types
+        // of err messages to the user?
+        key: "Unexpected Error",
+        message: UNEXPECTED_LOGIN_ERR_MESSAGE
+      },
       authenticatedUser: null
     });
   }
   if (!user) {
     reject({
-      errors: { key: "?", message: LOGIN_ERR_MESSAGE },
+      errors: { key: "Login Error", message: LOGIN_ERR_MESSAGE },
       authenticatedUser: null
     });
   }
@@ -81,6 +87,45 @@ const getUserById = async id => {
   return user;
 };
 
+const getUserOperations = {
+  data: {
+    errors: null,
+    message: null,
+    user: null
+  },
+  params: {
+    userId: null
+  },
+  authorizeUser: async function(authorization, authorizeRequest) {
+    let [err, { userId }] = await to(authorizeRequest(authorization));
+    if (err) {
+      this.data.errors = [
+        {
+          key: "Unexpected Error",
+          message: UNAUTHORIZED_REQUEST_MESSAGE
+        }
+      ];
+    }
+    this.params.userId = userId;
+    return this;
+  },
+  getUser: async function(username) {
+    if (this.data.errors !== null) {
+      return this.data;
+    }
+    let [err, retrievedUser] = await to(getUserByUsername(username));
+    if (err) {
+      this.data.errors = [{ key: "Unexpected Error", message: err }];
+    }
+    if (retrievedUser) {
+      this.data.user = retrievedUser;
+    } else {
+      this.data.message = "User not found.";
+    }
+    return this.data;
+  }
+};
+
 // Switched over to passing in the authorizeRequest function in to this function
 // to mitigate issues related to circular imports since, authorizeRequest utilizes
 // getUserByUsername from this file. Will more than likely switch over other resolvers
@@ -90,43 +135,17 @@ const getUserByUsernameIfAuthorized = async (
   authorization,
   authorizeRequest
 ) => {
-  let retrievedUser;
-  let [err, { userId, errors }] = await to(authorizeRequest(authorization));
-  if (err) {
-    Promise.reject({
-      errors: { key: "?", message: UNAUTHORIZED_REQUEST_MESSAGE },
-      user: null
-    });
-  }
-  if (userId) {
-    [err, retrievedUser] = await to(getUserByUsername(username));
-    if (err) {
-      Promise.reject({
-        errors: { key: "?", message: err },
-        message: null,
-        user: null
-      });
-    }
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
-  }
-  if (retrievedUser) {
-    return Promise.resolve({
-      errors: null,
-      message: null,
-      user: retrievedUser
-    });
-  } else {
-    return Promise.resolve({
-      errors: null,
-      message: "User not found.",
-      user: null
-    });
-  }
+  // Three error cases:
+  // Failed to authorize user
+  // unexpected error while retrieving user by username
+  // User not found
+
+  // If I could pipe/chain... I would. I'll have to play with this some more and see if I can make it better.
+  let obj = await getUserOperations.authorizeUser(
+    authorization,
+    authorizeRequest
+  );
+  return await obj.getUser(username);
 };
 
 const createUser = input => {
@@ -136,13 +155,18 @@ const createUser = input => {
     [err, user] = await to(getUserByUsername(username));
     if (err) {
       reject({
-        errors: { key: "?", message: err },
+        // Create another custom error message for this case.
+        errors: { key: "Unexpected Error", message: err },
         authenticatedUser: null
       });
     }
     if (user) {
       reject({
-        errors: { key: "?", message: USERNAME_TAKEN_ERR_MESSAGE },
+        // Create another custom error message for this case.
+        errors: {
+          key: "Username Taken Error",
+          message: USERNAME_TAKEN_ERR_MESSAGE
+        },
         authenticatedUser: null
       });
     }
@@ -150,7 +174,7 @@ const createUser = input => {
     [err, { uuid }] = await to(hashPasswordAndSaveUser(newUser, password));
     if (err) {
       reject({
-        errors: { key: "?", message: err },
+        errors: { key: "Unexpected Error", message: err },
         authenticatedUser: null
       });
     }

@@ -167,7 +167,7 @@ const prepareUpdateGroupActivity = async (input, createdChat) => {
 // to eliminate the duplication that's going on with createGroupIfAuthorized and this.
 const createDirectChatIfAuthorized = async (input, authorization) => {
   let createdChat;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId } = await authorizeRequest(authorization);
   if (userId) {
     input.messageInput.senderUsername = input.senderUsername;
     // Need message so that the user(sender) updated with the newly created chat
@@ -175,32 +175,36 @@ const createDirectChatIfAuthorized = async (input, authorization) => {
     createdChat = await createMessageAndChat(input);
     // Should have groupUuid by this point to decide how to proceed below.
     await prepareUpdateGroupActivity(input, createdChat);
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return createdChat;
 };
 
 const createGroupChatIfAuthorized = async (input, authorization) => {
   let createdChat;
   let err;
-  const { userId, username, errors } = await authorizeRequest(authorization);
+  const { userId, username } = await authorizeRequest(authorization);
   if (userId) {
     [err, createdChat] = await to(createGroupChat(input, userId, username));
     if (err) {
       return { errors: err, chat: null };
     }
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return { errors: null, chat: createdChat };
 };
 
@@ -228,7 +232,7 @@ const updateGroupChatParticipationIfAuthorized = async (
 ) => {
   let chat;
   let err;
-  const { userId, username, errors, groupActivities } = await authorizeRequest(
+  const { userId, username, groupActivities } = await authorizeRequest(
     authorization
   );
   if (userId) {
@@ -238,13 +242,15 @@ const updateGroupChatParticipationIfAuthorized = async (
     if (err) {
       return { errors: err, result: null, chat: null };
     }
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   if (!chat) {
     return {
       errors: null,

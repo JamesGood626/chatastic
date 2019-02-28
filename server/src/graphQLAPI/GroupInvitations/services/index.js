@@ -63,46 +63,52 @@ const acceptGroupInvitation = async (input, userId) => {
 // call it inside to prevent the three times copy.
 const acceptGroupInvitationIfAuthorized = async (input, authorization) => {
   let joinedGroup;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId } = await authorizeRequest(authorization);
   if (userId) {
     joinedGroup = await acceptGroupInvitation(input, userId);
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return joinedGroup;
 };
 
 const declineGroupInvitationIfAuthorized = async (input, authorization) => {
   let deletedInvitation;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId } = await authorizeRequest(authorization);
   if (userId) {
     deletedInvitation = await declineGroupInvitation(input, userId);
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return deletedInvitation;
 };
 
 const createGroupInvitationIfAuthorized = async (input, authorization) => {
   let createdChat;
-  const { userId, errors } = await authorizeRequest(authorization);
+  const { userId } = await authorizeRequest(authorization);
   if (userId) {
     createdChat = await createGroupInvitation(input, userId);
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return createdChat;
 };
 

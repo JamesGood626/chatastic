@@ -53,16 +53,18 @@ const assignCreatorAndCreateGroup = async (userId, username, input) => {
 
 const createGroupIfAuthorized = async (input, authorization) => {
   let createdGroup;
-  const { userId, username, errors } = await authorizeRequest(authorization);
+  const { userId, username } = await authorizeRequest(authorization);
   if ((userId, username)) {
     createdGroup = await assignCreatorAndCreateGroup(userId, username, input);
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return createdGroup;
 };
 
