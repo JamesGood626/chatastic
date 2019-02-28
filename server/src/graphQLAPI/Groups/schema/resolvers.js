@@ -2,6 +2,7 @@ const { getGroupByUuid, createGroupIfAuthorized } = require("../services");
 const { getUserById, retrieveMembersList } = require("../../Accounts/services");
 const { retrieveChatsList } = require("../../Chats/services");
 
+// Service functions need error handling refactoring
 const resolvers = {
   Query: {
     getGroup: async (_parentValue, { input: { groupUuid } }, _context) => {

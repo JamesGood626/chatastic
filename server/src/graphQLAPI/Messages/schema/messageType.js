@@ -9,12 +9,12 @@ const { gql } = require("apollo-server-express");
 
 const MessageTypeDef = gql`
   type MessageResult {
-    errors: [InputError]
+    errors: [UserError]
     messageEdge: MessageEdge!
   }
 
   type PaginatedMessagesResult {
-    errors: [InputError]
+    errors: [UserError]
     messageConnection: MessageConnection!
   }
 

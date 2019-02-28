@@ -5,7 +5,7 @@ const {
 } = require("../services");
 const { getUserById } = require("../../Accounts/services");
 
-// commit auth fail
+// Service functions need error handling refactoring
 const resolvers = {
   Query: {
     getMessagesByChatChannel: async (

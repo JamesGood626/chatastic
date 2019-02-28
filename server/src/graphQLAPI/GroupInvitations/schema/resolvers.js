@@ -9,6 +9,7 @@ const { getUserById } = require("../../Accounts/services");
 
 // TODO:
 // still need to implement decline group invitation.
+// Service functions need error handling refactoring
 const resolvers = {
   Query: {},
   Mutation: {

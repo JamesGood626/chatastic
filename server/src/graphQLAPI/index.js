@@ -1,10 +1,5 @@
 const { gql } = require("apollo-server-express");
 
-// retrieveMessagesByChatChannel(
-//   input: RetrieveMessagesInput
-// ): PaginatedMessagesResult
-
-// commit auth fail
 const queryTypeDef = gql`
   type Query {
     allUsers: [Bull]
@@ -30,19 +25,19 @@ const queryTypeDef = gql`
     ): GroupInvitationResult
     createDirectChat(input: CreateDirectChatInput!): ChatResult
     createGroupChat(input: CreateGroupChatInput!): ChatResult
-    updateGroupChatParticipation(
-      input: UpdateGroupChatParticipationInput
-    ): UpdateGroupChatParticipationResult
     createMessageInExistingChat(
       input: createMessageInExistingChatInput!
     ): MessageResult
+    updateGroupChatParticipation(
+      input: UpdateGroupChatParticipationInput
+    ): UpdateGroupChatParticipationResult
   }
 
   type Subscription {
     userCreated(channel: String!): AuthenticatedUserResult
   }
 
-  type InputError {
+  type UserError {
     key: String!
     message: String!
   }

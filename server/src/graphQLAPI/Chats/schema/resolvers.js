@@ -7,6 +7,7 @@ const {
 const { getUserById } = require("../../Accounts/services");
 const { retrieveMessageList } = require("../../Messages/services");
 
+// Service functions need error handling refactoring
 const resolvers = {
   Query: {},
   Mutation: {

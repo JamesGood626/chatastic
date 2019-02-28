@@ -19,13 +19,13 @@ const ChatTypeDef = gql`
 
   type ChatResult {
     chat: Chat
-    errors: [InputError]
+    errors: [UserError]
   }
 
   type UpdateGroupChatParticipationResult {
     result: String!
     chat: Chat
-    errors: [InputError]
+    errors: [UserError]
   }
 
   input CreateDirectChatInput {

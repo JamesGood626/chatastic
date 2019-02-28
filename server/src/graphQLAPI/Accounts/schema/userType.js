@@ -53,7 +53,7 @@ const UserTypeDef = gql`
   type UserSearchResult {
     user: Invitee
     message: String
-    errors: [InputError]
+    errors: [UserError]
   }
 
   input UserSearchInput {
@@ -73,7 +73,7 @@ const UserTypeDef = gql`
   }
 
   type AuthenticatedUserResult {
-    errors: [InputError]
+    errors: [UserError]
     authenticatedUser: AuthenticatedUser
   }
 

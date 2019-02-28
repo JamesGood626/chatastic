@@ -24,7 +24,7 @@ const createMessage = (input, newCursor = 1) => {
 // Refactor
 const createMessageIfAuthorized = async (input, authorization) => {
   let createdMessageEdge;
-  const { userId, username, errors } = await authorizeRequest(authorization);
+  const { userId, username } = await authorizeRequest(authorization);
   if (userId) {
     const { chatChannel, ...messageInput } = input;
     const chat = await getChatByChannel(chatChannel);
@@ -36,13 +36,15 @@ const createMessageIfAuthorized = async (input, authorization) => {
     createdMessageEdge = await createMessage(messageInput, newCursor);
     chat.messages = [...chat.messages, createdMessageEdge];
     await chat.save();
-  } else {
-    const { decodeTokenError, expiredTokenError } = errors;
-    if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
-    // Use apollo client httpLinks auto refetch functionality
-    // to get the user a new JWT for the decodeTokenError case.
-    if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
   }
+  // Refactored away 2/27/2019
+  // else {
+  //   const { decodeTokenError, expiredTokenError } = errors;
+  //   if (expiredTokenError !== null) throw new ForbiddenError(expiredTokenError);
+  //   // Use apollo client httpLinks auto refetch functionality
+  //   // to get the user a new JWT for the decodeTokenError case.
+  //   if (decodeTokenError !== null) throw new ForbiddenError(decodeTokenError);
+  // }
   return {
     errors: null,
     messageEdge: createdMessageEdge
@@ -54,7 +56,7 @@ const createMessageIfAuthorized = async (input, authorization) => {
 const getMessagesIfAuthorized = async (input, authorization) => {
   let retrievedMessageEdges;
   const { start, end, chatChannel } = input;
-  const { userId, username, errors } = await authorizeRequest(authorization);
+  const { userId, username } = await authorizeRequest(authorization);
   if (userId) {
     retrievedMessageEdges = await MessageEdge.find(
       { cursor: { $gte: start, $lte: end } },

@@ -31,6 +31,7 @@ const verifyAuthorization = async authorization => {
     }
     return Promise.resolve(user);
   } else {
+    // don't throw error, just return a promise
     throw new Error(TOKEN_EXPIRED_MESSAGE);
   }
 };
@@ -38,20 +39,26 @@ const verifyAuthorization = async authorization => {
 const authorizeRequest = async authorization => {
   let user;
   let err;
-  let errors = {};
-  try {
-    [err, user] = await to(verifyAuthorization(authorization));
-    if (err) {
-      return Promise.reject(err);
-    }
-  } catch (e) {
-    errors.decodeTokenError =
-      e.message === TOKEN_DECODING_MESSAGE ? TOKEN_DECODING_MESSAGE : null;
-    errors.expiredTokenError =
-      e.message === TOKEN_EXPIRED_MESSAGE ? TOKEN_EXPIRED_MESSAGE : null;
+  [err, user] = await to(verifyAuthorization(authorization));
+  if (err) {
+    return Promise.reject(err);
   }
+  // Refactored away 2/27/2019
+  // Should I include logic for doing a token refresh for expired tokens?
+  // must look further into security matters...
+  // try {
+  //   [err, user] = await to(verifyAuthorization(authorization));
+  //   if (err) {
+  //     return Promise.reject(err);
+  //   }
+  // } catch (e) {
+  //   errors.decodeTokenError =
+  //     e.message === TOKEN_DECODING_MESSAGE ? TOKEN_DECODING_MESSAGE : null;
+  //   errors.expiredTokenError =
+  //     e.message === TOKEN_EXPIRED_MESSAGE ? TOKEN_EXPIRED_MESSAGE : null;
+  // }
   const { _id, username, groupActivities } = user;
-  return { userId: _id, username, groupActivities, errors };
+  return { userId: _id, username, groupActivities };
 };
 
 module.exports = authorizeRequest;

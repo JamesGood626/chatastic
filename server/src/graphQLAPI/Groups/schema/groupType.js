@@ -14,7 +14,7 @@ const GroupTypeDef = gql`
 
   type GroupResult {
     group: Group
-    errors: [InputError]
+    errors: [UserError]
   }
 
   input CreateGroupInput {
